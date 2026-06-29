@@ -1,6 +1,6 @@
 {
   "schema": "docs/PLAYBOOK-SCHEMA.md",
-  "count": 150,
+  "count": 169,
   "playbooks": [
     {
       "id": "opportunity-scan",
@@ -7051,6 +7051,1112 @@
         "max_words": 700
       },
       "rubric": "Passes only when a real first cohort has been recruited by hand from named communities and their early behaviour is recorded, not when a generic \"post on social and run ads\" plan is written."
+    },
+    {
+      "id": "willingness-to-pay-research",
+      "title": "Willingness-to-Pay Research",
+      "level": 1,
+      "file": "playbooks/level-1/200-willingness-to-pay-research.md",
+      "applies_to": {
+        "types": [
+          "*"
+        ],
+        "requires_traits": [],
+        "excluded_traits": []
+      },
+      "relevance": "core",
+      "selection_hint": "Choose before setting any price. Strongest when you have target accounts identified but no revenue and no defended price point yet.",
+      "depends_on": [
+        "problem-validation-interviews",
+        "icp-target-account-listing"
+      ],
+      "soft_after": [
+        "problem-validation-interviews"
+      ],
+      "produces": [
+        "wtp_evidence",
+        "value_metric",
+        "price_band_estimate"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "easy",
+      "human_gate": false,
+      "blocks_revenue": true,
+      "recurring": false,
+      "typical_milestone": "pre-revenue pricing readiness",
+      "department": "Finance",
+      "criticality": "core",
+      "existential_at": [
+        "landing",
+        "building"
+      ],
+      "model_fit": [
+        "recurring",
+        "transactional",
+        "self_serve",
+        "sales_led"
+      ],
+      "deliverable": {
+        "artifact": "wtp_evidence",
+        "sections": [
+          "Value metric and rationale",
+          "Price band by segment with quotes",
+          "Budget owner and buying trigger",
+          "Sensitivity notes and open risks"
+        ],
+        "max_words": 700
+      },
+      "rubric": "Passes if the value metric is named, a defensible price band per segment is supported by at least eight buyer quotes, and the budget owner is identified."
+    },
+    {
+      "id": "revenue-model-selection",
+      "title": "Revenue Model Selection",
+      "level": 1,
+      "file": "playbooks/level-1/201-revenue-model-selection.md",
+      "applies_to": {
+        "types": [
+          "*"
+        ],
+        "requires_traits": [],
+        "excluded_traits": []
+      },
+      "relevance": "core",
+      "selection_hint": "Run once the value proposition is clear and before pricing or financial modeling; surface it early so the charging mechanism is chosen, not inherited.",
+      "depends_on": [],
+      "soft_after": [
+        "mvp-scoping"
+      ],
+      "produces": [
+        "revenue_model_choice",
+        "monetization_rationale"
+      ],
+      "consumes": [],
+      "effort": "S",
+      "leverage": "critical",
+      "reversibility": "hard",
+      "human_gate": true,
+      "blocks_revenue": true,
+      "recurring": false,
+      "typical_milestone": "building",
+      "department": "Finance",
+      "criticality": "core",
+      "existential_at": [
+        "revenue"
+      ],
+      "model_fit": [
+        "recurring",
+        "transactional",
+        "self_serve",
+        "sales_led",
+        "marketplace"
+      ],
+      "deliverable": {
+        "artifact": "revenue_model_choice",
+        "sections": [
+          "Chosen model and pricing metric",
+          "Why this fits the value delivered",
+          "Rejected alternatives and reasons",
+          "Unit economics sketch",
+          "Open risks and revisit trigger"
+        ],
+        "max_words": 600
+      },
+      "rubric": "Passes if it names one primary model with a specific charging metric, ties it to how value is delivered and consumed, and shows a per-unit margin sketch that does not lose money at scale."
+    },
+    {
+      "id": "pricing-smoke-test",
+      "title": "Pricing Smoke Test",
+      "level": 2,
+      "file": "playbooks/level-2/202-pricing-smoke-test.md",
+      "applies_to": {
+        "types": [
+          "saas",
+          "ecommerce",
+          "consumer",
+          "b2b",
+          "marketplace"
+        ],
+        "requires_traits": [],
+        "excluded_traits": []
+      },
+      "relevance": "core",
+      "selection_hint": "Select before launch when price is a guess and you have access to prospects or traffic. Skip if pricing is fixed by a marketplace take rate or a contract you do not control.",
+      "depends_on": [
+        "icp-target-account-listing"
+      ],
+      "soft_after": [
+        "problem-validation-interviews",
+        "pricing-research"
+      ],
+      "produces": [
+        "pricing_signal",
+        "willingness_to_pay_band",
+        "fake_door_conversion_rate"
+      ],
+      "consumes": [],
+      "effort": "S",
+      "leverage": "high",
+      "reversibility": "easy",
+      "human_gate": false,
+      "blocks_revenue": false,
+      "recurring": false,
+      "typical_milestone": "pre-launch pricing validated with a real money or intent signal",
+      "department": "Finance",
+      "criticality": "core",
+      "existential_at": [],
+      "model_fit": [
+        "transactional",
+        "self_serve"
+      ],
+      "deliverable": {
+        "artifact": "pricing_signal",
+        "sections": [
+          "Test method and audience",
+          "Price points tested",
+          "Conversion or WTP results",
+          "Recommended launch price"
+        ],
+        "max_words": 600
+      },
+      "rubric": "Strong if the recommended price is backed by a real money or click-through signal from at least 30 target prospects, not opinion or guesswork."
+    },
+    {
+      "id": "pre-sales-and-letters-of-intent",
+      "title": "Pre-Sales and Letters of Intent",
+      "level": 2,
+      "file": "playbooks/level-2/203-pre-sales-and-letters-of-intent.md",
+      "applies_to": {
+        "types": [
+          "b2b",
+          "b2b-service",
+          "saas"
+        ],
+        "requires_traits": [
+          "b2b"
+        ],
+        "excluded_traits": [
+          "consumer_mass_market"
+        ]
+      },
+      "relevance": "core",
+      "selection_hint": "Select for B2B builders pre-revenue who have a validated problem and a target account list but no signed demand yet. Skip for self-serve consumer or pure transactional plays where individual contracts are not how buyers commit.",
+      "depends_on": [
+        "problem-validation-interviews",
+        "icp-target-account-listing"
+      ],
+      "soft_after": [
+        "mvp-scoping",
+        "pricing-research"
+      ],
+      "produces": [
+        "signed_lois",
+        "pre_commitments",
+        "paid_pilot_agreements",
+        "design_partner_roster",
+        "loi_pipeline_tracker"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "critical",
+      "reversibility": "medium",
+      "human_gate": true,
+      "blocks_revenue": true,
+      "recurring": false,
+      "typical_milestone": "building",
+      "department": "Sales",
+      "criticality": "core",
+      "existential_at": [
+        "building",
+        "launched"
+      ],
+      "model_fit": [
+        "recurring",
+        "sales_led",
+        "transactional"
+      ],
+      "deliverable": {
+        "artifact": "loi_pipeline_tracker",
+        "sections": [
+          "Target accounts and status",
+          "Offer terms presented",
+          "Signed commitments",
+          "Objections and stalls",
+          "Design partner shortlist"
+        ],
+        "max_words": 600
+      },
+      "rubric": "Passes if at least three named target accounts signed an LOI or paid-pilot agreement with a dated commitment and a recorded price, tracked in the pipeline."
+    },
+    {
+      "id": "design-partner-program",
+      "title": "Design Partner Program",
+      "level": 3,
+      "file": "playbooks/level-3/204-design-partner-program.md",
+      "applies_to": {
+        "types": [
+          "b2b",
+          "saas",
+          "b2b-service"
+        ],
+        "requires_traits": [
+          "b2b"
+        ],
+        "excluded_traits": [
+          "consumer_mass_market"
+        ]
+      },
+      "relevance": "core",
+      "selection_hint": "Run when you have an ICP and validated problem but no paying customers, and the product is early enough that real users must shape it. Best for high-ACV b2b where a handful of committed accounts matters more than volume.",
+      "depends_on": [
+        "icp-target-account-listing",
+        "problem-validation-interviews"
+      ],
+      "soft_after": [
+        "mvp-scoping",
+        "pricing-research"
+      ],
+      "produces": [
+        "design_partners",
+        "design_partner_agreement",
+        "co_build_roadmap",
+        "reference_logo_list"
+      ],
+      "consumes": [],
+      "effort": "L",
+      "leverage": "critical",
+      "reversibility": "medium",
+      "human_gate": true,
+      "blocks_revenue": true,
+      "recurring": false,
+      "typical_milestone": "First paid commitments from named accounts",
+      "department": "Sales",
+      "criticality": "core",
+      "existential_at": [
+        "building"
+      ],
+      "model_fit": [
+        "sales_led",
+        "recurring"
+      ],
+      "deliverable": {
+        "artifact": "design_partner_agreement",
+        "sections": [
+          "Scope and co-build commitment",
+          "Access and feedback cadence",
+          "Paid terms and discount",
+          "Success criteria and timeline",
+          "Reference and case study rights"
+        ],
+        "max_words": 600
+      },
+      "rubric": "Passes if 3 or more named accounts have signed an agreement with a real dollar commitment and a defined feedback cadence, not a free pilot."
+    },
+    {
+      "id": "naming-and-brand-architecture",
+      "title": "Naming and Brand Architecture",
+      "level": 1,
+      "file": "playbooks/level-1/205-naming-and-brand-architecture.md",
+      "applies_to": {
+        "types": [
+          "*"
+        ],
+        "requires_traits": [],
+        "excluded_traits": []
+      },
+      "relevance": "core",
+      "selection_hint": "Run when the company or product is unnamed, when a placeholder name is leaking into copy, or when a second product line forces a parent-versus-standalone branding choice.",
+      "depends_on": [],
+      "soft_after": [
+        "brand-positioning-statement"
+      ],
+      "produces": [
+        "brand_name_decision",
+        "brand_architecture",
+        "name_shortlist",
+        "domain_and_handle_reservations",
+        "trademark_clearance_notes"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "hard",
+      "human_gate": true,
+      "blocks_revenue": false,
+      "recurring": false,
+      "typical_milestone": "Pre-launch identity lock",
+      "department": "Brand",
+      "criticality": "core",
+      "existential_at": [],
+      "model_fit": [
+        "recurring",
+        "transactional",
+        "self_serve",
+        "sales_led",
+        "marketplace",
+        "physical_goods",
+        "local"
+      ],
+      "deliverable": {
+        "artifact": "brand_name_decision",
+        "sections": [
+          "Chosen name and rationale",
+          "Architecture decision (branded house vs house of brands)",
+          "Clearance and availability evidence",
+          "Naming system for future products"
+        ],
+        "max_words": 600
+      },
+      "rubric": "Passes if one name is locked with documented trademark and domain clearance, and the architecture rule states how the next product gets named."
+    },
+    {
+      "id": "messaging-pillars-and-proof",
+      "title": "Messaging Pillars and Proof",
+      "level": 2,
+      "file": "playbooks/level-2/206-messaging-pillars-and-proof.md",
+      "applies_to": {
+        "types": [
+          "*"
+        ],
+        "requires_traits": [],
+        "excluded_traits": []
+      },
+      "relevance": "core",
+      "selection_hint": "Run once positioning is locked and before writing website, deck, or ad copy. Skip if positioning is still unsettled or no customer evidence exists yet.",
+      "depends_on": [
+        "brand-positioning-statement"
+      ],
+      "soft_after": [
+        "problem-validation-interviews"
+      ],
+      "produces": [
+        "message_pillars",
+        "proof_points",
+        "messaging_house"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "easy",
+      "human_gate": false,
+      "blocks_revenue": false,
+      "recurring": false,
+      "typical_milestone": "pre-launch messaging ready",
+      "department": "Brand",
+      "criticality": "core",
+      "existential_at": [],
+      "model_fit": [
+        "recurring",
+        "transactional",
+        "self_serve",
+        "sales_led",
+        "marketplace"
+      ],
+      "deliverable": {
+        "artifact": "messaging_house",
+        "sections": [
+          "Positioning anchor",
+          "Pillar 1 with proof",
+          "Pillar 2 with proof",
+          "Pillar 3 with proof",
+          "Optional Pillar 4 with proof",
+          "Proof gaps to close"
+        ],
+        "max_words": 600
+      },
+      "rubric": "Passes if each of 3 to 4 pillars ties directly to the positioning and carries at least two specific, verifiable proof points rather than adjectives."
+    },
+    {
+      "id": "category-design-and-pov",
+      "title": "Category Design and Point of View",
+      "level": 3,
+      "file": "playbooks/level-3/207-category-design-and-pov.md",
+      "applies_to": {
+        "types": [
+          "*"
+        ],
+        "requires_traits": [],
+        "excluded_traits": []
+      },
+      "relevance": "recommended",
+      "selection_hint": "Run this when you have positioning and a validated problem but the market still sorts you into an existing crowded category. Skip if you are a clear fast-follower competing on price or execution inside a defined category.",
+      "depends_on": [
+        "brand-positioning-statement",
+        "problem-validation-interviews"
+      ],
+      "soft_after": [
+        "positioning-canvas",
+        "icp-target-account-listing"
+      ],
+      "produces": [
+        "category_definition",
+        "pov_thesis",
+        "category_naming_options",
+        "enemy_narrative"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "medium",
+      "human_gate": false,
+      "blocks_revenue": false,
+      "recurring": false,
+      "typical_milestone": "launched",
+      "department": "Brand",
+      "criticality": "growth",
+      "existential_at": [],
+      "model_fit": [
+        "recurring",
+        "self_serve",
+        "sales_led",
+        "marketplace"
+      ],
+      "deliverable": {
+        "artifact": "category_definition",
+        "sections": [
+          "Old game and its broken metric",
+          "The structural shift (dated, with evidence)",
+          "Contrarian thesis and named enemy",
+          "Category name and one-line definition",
+          "Proof spine: three claims and their assets"
+        ],
+        "max_words": 900
+      },
+      "rubric": "Passes if a stranger can read the pov_thesis and correctly state the new category, the named enemy, and the single metric buyers should judge it on."
+    },
+    {
+      "id": "brand-guidelines-system",
+      "title": "Brand Guidelines System",
+      "level": 3,
+      "file": "playbooks/level-3/208-brand-guidelines-system.md",
+      "applies_to": {
+        "types": [
+          "*"
+        ],
+        "requires_traits": [],
+        "excluded_traits": []
+      },
+      "relevance": "recommended",
+      "selection_hint": "Run once a positioning statement and a working logo exist and output is starting to fan out across surfaces (site, deck, social, product UI).",
+      "depends_on": [
+        "brand-positioning-statement"
+      ],
+      "soft_after": [],
+      "produces": [
+        "brand_system",
+        "color_tokens",
+        "type_scale",
+        "voice_guide",
+        "logo_usage_rules"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "easy",
+      "human_gate": false,
+      "blocks_revenue": false,
+      "recurring": false,
+      "typical_milestone": "first-brand-surface",
+      "department": "Brand",
+      "criticality": "growth",
+      "existential_at": [],
+      "model_fit": [
+        "recurring",
+        "transactional",
+        "self_serve",
+        "sales_led",
+        "marketplace",
+        "physical_goods",
+        "local"
+      ],
+      "deliverable": {
+        "artifact": "brand_system",
+        "sections": [
+          "Brand core and personality",
+          "Color tokens and contrast pairs",
+          "Type scale and usage",
+          "Logo usage and forbidden treatments",
+          "Voice do/don't and banned terms"
+        ],
+        "max_words": 900
+      },
+      "rubric": "Passes if a contributor who has never seen the brand can produce an on-brand surface using only the document, with named tokens, a fixed type scale, explicit logo rules, and concrete voice examples."
+    },
+    {
+      "id": "founder-brand-and-thought-leadership",
+      "title": "Founder Brand and Thought Leadership",
+      "level": 4,
+      "file": "playbooks/level-4/209-founder-brand-and-thought-leadership.md",
+      "applies_to": {
+        "types": [
+          "*"
+        ],
+        "requires_traits": [],
+        "excluded_traits": []
+      },
+      "relevance": "recommended",
+      "selection_hint": "Select when the founder has earned a point of view in the category and distribution is the bottleneck, not the product. Skip if the founder cannot commit to a weekly cadence for at least eight weeks.",
+      "depends_on": [
+        "brand-positioning-statement",
+        "icp-target-account-listing"
+      ],
+      "soft_after": [],
+      "produces": [
+        "founder_audience",
+        "content_pillars",
+        "publishing_cadence",
+        "owned_distribution_list"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "easy",
+      "human_gate": false,
+      "blocks_revenue": false,
+      "recurring": true,
+      "typical_milestone": "launched",
+      "department": "Brand",
+      "criticality": "growth",
+      "existential_at": [],
+      "model_fit": [
+        "recurring",
+        "self_serve",
+        "sales_led",
+        "marketplace"
+      ],
+      "deliverable": {
+        "artifact": "founder_content_system",
+        "sections": [
+          "platform_and_bio",
+          "content_pillars",
+          "publishing_cadence",
+          "owned_list_setup",
+          "weekly_review_metrics"
+        ],
+        "max_words": 600
+      },
+      "rubric": "Passes if there is a named platform, three to five defensible pillars, a committed weekly cadence with a drafted backlog, and a working subscribe path that captured at least one real subscriber."
+    },
+    {
+      "id": "customer-onboarding-success",
+      "title": "Customer Onboarding and Success Activation",
+      "level": 4,
+      "file": "playbooks/level-4/210-customer-onboarding-success.md",
+      "applies_to": {
+        "types": [
+          "saas",
+          "b2b",
+          "b2b-service",
+          "marketplace"
+        ],
+        "requires_traits": [],
+        "excluded_traits": [
+          "self_serve_only"
+        ]
+      },
+      "relevance": "recommended",
+      "selection_hint": "Select when deals close with a human touch and customers need help reaching value, not when activation is fully self-serve inside the product.",
+      "depends_on": [
+        "onboarding-flow-design"
+      ],
+      "soft_after": [
+        "pricing-research",
+        "icp-target-account-listing"
+      ],
+      "produces": [
+        "success_onboarding",
+        "customer_success_plan",
+        "time_to_first_value_metric",
+        "kickoff_agenda"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "easy",
+      "human_gate": false,
+      "blocks_revenue": false,
+      "recurring": true,
+      "typical_milestone": "first_ten_paying_customers",
+      "department": "Success",
+      "criticality": "core",
+      "existential_at": [],
+      "model_fit": [
+        "recurring",
+        "sales_led",
+        "marketplace"
+      ],
+      "deliverable": {
+        "artifact": "success_onboarding",
+        "sections": [
+          "Kickoff Agenda",
+          "Success Plan Template",
+          "Time-to-First-Value Definition",
+          "Milestone Checklist",
+          "Handoff and Escalation Rules"
+        ],
+        "max_words": 700
+      },
+      "rubric": "Pass if a named owner can run a kickoff, produce a per-customer success plan, and report each account's time-to-first-value against a defined milestone within the first two weeks."
+    },
+    {
+      "id": "lifecycle-and-retention-email",
+      "title": "Lifecycle and Retention Email Program",
+      "level": 5,
+      "file": "playbooks/level-5/211-lifecycle-and-retention-email.md",
+      "applies_to": {
+        "types": [
+          "*"
+        ],
+        "requires_traits": [],
+        "excluded_traits": []
+      },
+      "relevance": "core",
+      "selection_hint": "Select once you have live users and a defined activation event but retention is leaking after signup. Skip if you have not yet shipped a product people can return to.",
+      "depends_on": [],
+      "soft_after": [
+        "mvp-scoping"
+      ],
+      "produces": [
+        "lifecycle_retention_program",
+        "activation_email_sequence",
+        "dormant_winback_flow",
+        "lifecycle_trigger_map"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "easy",
+      "human_gate": false,
+      "blocks_revenue": false,
+      "recurring": true,
+      "typical_milestone": "launched",
+      "department": "Success",
+      "criticality": "core",
+      "existential_at": [],
+      "model_fit": [
+        "recurring",
+        "self_serve",
+        "transactional"
+      ],
+      "deliverable": {
+        "artifact": "lifecycle_retention_program",
+        "sections": [
+          "Activation Path and Aha Event",
+          "Trigger Map and Segments",
+          "Message Sequences and Copy",
+          "Dormant Re-engagement Flow",
+          "Measurement and Control Group"
+        ],
+        "max_words": 900
+      },
+      "rubric": "Passes if every message is tied to a named trigger event and segment, and an activation rate target with a holdout control group is defined."
+    },
+    {
+      "id": "renewal-and-retention-playbook",
+      "title": "Renewal and Retention Playbook",
+      "level": 6,
+      "file": "playbooks/level-6/212-renewal-and-retention-playbook.md",
+      "applies_to": {
+        "types": [
+          "saas",
+          "b2b",
+          "b2b-service",
+          "marketplace"
+        ],
+        "requires_traits": [
+          "recurring_revenue"
+        ],
+        "excluded_traits": [
+          "one_time_purchase"
+        ]
+      },
+      "relevance": "core",
+      "selection_hint": "Run once recurring revenue exists and the first cohort of contracts is approaching renewal. Skip for one-time transactional models.",
+      "depends_on": [
+        "pricing-research"
+      ],
+      "soft_after": [],
+      "produces": [
+        "renewal_motion",
+        "account_health_score",
+        "at_risk_save_plays",
+        "renewal_timeline"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "easy",
+      "human_gate": false,
+      "blocks_revenue": false,
+      "recurring": true,
+      "typical_milestone": "First renewal cohort approaching contract end",
+      "department": "Success",
+      "criticality": "core",
+      "existential_at": [
+        "revenue",
+        "scaling"
+      ],
+      "model_fit": [
+        "recurring",
+        "sales_led"
+      ],
+      "deliverable": {
+        "artifact": "renewal_motion",
+        "sections": [
+          "Health Score Definition",
+          "Renewal Timeline",
+          "At-Risk Save Plays",
+          "Owner and Cadence"
+        ],
+        "max_words": 600
+      },
+      "rubric": "Passes if every active account carries a current health score and a dated renewal owner, and at least three triggered save plays are documented with entry criteria."
+    },
+    {
+      "id": "customer-advisory-board",
+      "title": "Customer Advisory Board",
+      "level": 6,
+      "file": "playbooks/level-6/213-customer-advisory-board.md",
+      "applies_to": {
+        "types": [
+          "saas",
+          "b2b",
+          "b2b-service",
+          "marketplace"
+        ],
+        "requires_traits": [],
+        "excluded_traits": [
+          "pre_launch",
+          "no_paying_customers"
+        ]
+      },
+      "relevance": "recommended",
+      "selection_hint": "Pick this once you have 15 or more paying accounts and a roadmap with real tradeoffs. Skip if you are pre-revenue or selling self-serve to long-tail consumers where a small board cannot represent the base.",
+      "depends_on": [
+        "icp-target-account-listing"
+      ],
+      "soft_after": [],
+      "produces": [
+        "advisory_board",
+        "advisory_board_charter",
+        "advisory_roadmap_feedback",
+        "reference_advocate_list"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "easy",
+      "human_gate": true,
+      "blocks_revenue": false,
+      "recurring": true,
+      "typical_milestone": "post-pmf scaling, expanding from 15 to 100+ accounts",
+      "department": "Success",
+      "criticality": "growth",
+      "existential_at": [],
+      "model_fit": [
+        "recurring",
+        "sales_led",
+        "marketplace"
+      ],
+      "deliverable": {
+        "artifact": "advisory_board",
+        "sections": [
+          "Charter and Mandate",
+          "Member Roster and Terms",
+          "Session Cadence and Agenda Template",
+          "Feedback Log and Roadmap Triage",
+          "Advocate and Reference Roster"
+        ],
+        "max_words": 800
+      },
+      "rubric": "Strong if the board has a written mandate, 8 to 12 ICP-representative members on terms, and a documented loop from session feedback to roadmap decisions to named advocates."
+    },
+    {
+      "id": "lead-qualification-framework",
+      "title": "Lead Qualification Framework and Deal Scoring",
+      "level": 5,
+      "file": "playbooks/level-5/214-lead-qualification-framework.md",
+      "applies_to": {
+        "types": [
+          "b2b",
+          "saas",
+          "b2b-service"
+        ],
+        "requires_traits": [
+          "b2b"
+        ],
+        "excluded_traits": [
+          "self_serve_only"
+        ]
+      },
+      "relevance": "core",
+      "selection_hint": "Select when a founder-led or early sales team is taking discovery calls but lacks a consistent way to decide which deals to pursue and which to drop.",
+      "depends_on": [
+        "icp-target-account-listing"
+      ],
+      "soft_after": [
+        "pricing-research"
+      ],
+      "produces": [
+        "qualification_framework",
+        "deal_scorecard",
+        "disqualification_criteria"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "easy",
+      "human_gate": false,
+      "blocks_revenue": false,
+      "recurring": false,
+      "typical_milestone": "First repeatable sales motion with qualified pipeline",
+      "department": "Sales",
+      "criticality": "core",
+      "existential_at": [],
+      "model_fit": [
+        "sales_led",
+        "recurring"
+      ],
+      "deliverable": {
+        "artifact": "qualification_framework",
+        "sections": [
+          "Chosen framework and dimension definitions",
+          "Weighted scoring model with 0-3 anchors",
+          "Qualify and advance thresholds",
+          "Hard disqualification criteria",
+          "CRM fields and enforcement"
+        ],
+        "max_words": 700
+      },
+      "rubric": "Passes if a rep can independently score a live deal in under five minutes and reach the same qualify or disqualify decision a peer would."
+    },
+    {
+      "id": "sales-pipeline-and-crm-hygiene",
+      "title": "Sales Pipeline and CRM Hygiene",
+      "level": 5,
+      "file": "playbooks/level-5/215-sales-pipeline-and-crm-hygiene.md",
+      "applies_to": {
+        "types": [
+          "b2b",
+          "saas",
+          "b2b-service"
+        ],
+        "requires_traits": [
+          "b2b"
+        ],
+        "excluded_traits": []
+      },
+      "relevance": "core",
+      "selection_hint": "Select once a B2B team is running multiple live deals and pipeline review is guesswork. Skip for pure self-serve or transactional flows with no human selling.",
+      "depends_on": [
+        "icp-target-account-listing"
+      ],
+      "soft_after": [
+        "pricing-research"
+      ],
+      "produces": [
+        "pipeline_definition",
+        "stage_exit_criteria",
+        "crm_hygiene_cadence",
+        "weighted_forecast"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "easy",
+      "human_gate": false,
+      "blocks_revenue": false,
+      "recurring": true,
+      "typical_milestone": "First repeatable B2B sales motion with more than five concurrent deals",
+      "department": "Sales",
+      "criticality": "core",
+      "existential_at": [],
+      "model_fit": [
+        "sales_led",
+        "recurring"
+      ],
+      "deliverable": {
+        "artifact": "pipeline_definition",
+        "sections": [
+          "Stage list and definitions",
+          "Entry and exit criteria per stage",
+          "Probability weighting and forecast method",
+          "CRM hygiene cadence and rules"
+        ],
+        "max_words": 600
+      },
+      "rubric": "Pass if every stage has a buyer-verifiable exit criterion and a weighted forecast can be produced from the CRM without manual guessing."
+    },
+    {
+      "id": "contractor-and-ip-assignment",
+      "title": "Contractor and IP Assignment Agreements",
+      "level": 1,
+      "file": "playbooks/level-1/216-contractor-and-ip-assignment.md",
+      "applies_to": {
+        "types": [
+          "*"
+        ],
+        "requires_traits": [],
+        "excluded_traits": []
+      },
+      "relevance": "core",
+      "selection_hint": "Select once anyone other than a single sole owner has touched code, design, or brand work, and always before opening a fundraise or signing a customer. Skip only if the entity does not yet exist.",
+      "depends_on": [],
+      "soft_after": [],
+      "produces": [
+        "ip_assignment_agreements",
+        "contractor_agreement_template",
+        "ip_ownership_register"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "hard",
+      "human_gate": true,
+      "blocks_revenue": false,
+      "recurring": false,
+      "typical_milestone": "first hire or contractor, pre-fundraise",
+      "department": "Legal",
+      "criticality": "core",
+      "existential_at": [
+        "scaling"
+      ],
+      "model_fit": [
+        "recurring",
+        "transactional",
+        "self_serve",
+        "sales_led",
+        "marketplace",
+        "physical_goods",
+        "local"
+      ],
+      "deliverable": {
+        "artifact": "ip_assignment_agreements",
+        "sections": [
+          "Founder IP assignment",
+          "Contractor and employee assignment clauses",
+          "Pre-incorporation work transfer",
+          "Signature and counterparty register"
+        ],
+        "max_words": 600
+      },
+      "rubric": "Pass if every person who created code, design, or brand assets, including founders and pre-incorporation contributors, has a signed agreement assigning that work to the company."
+    },
+    {
+      "id": "data-processing-and-dpa",
+      "title": "Data Processing Agreement and Subprocessor Package",
+      "level": 3,
+      "file": "playbooks/level-3/217-data-processing-and-dpa.md",
+      "applies_to": {
+        "types": [
+          "saas",
+          "b2b",
+          "b2b-service"
+        ],
+        "requires_traits": [
+          "collects_user_data"
+        ],
+        "excluded_traits": []
+      },
+      "relevance": "core",
+      "selection_hint": "Select when you process personal data on behalf of business customers and a buyer has asked for a DPA, subprocessor list, or security questionnaire. Skip if you have no business customers handling personal data yet.",
+      "depends_on": [
+        "icp-target-account-listing"
+      ],
+      "soft_after": [],
+      "produces": [
+        "dpa_package",
+        "subprocessor_list",
+        "data_flow_map"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "medium",
+      "human_gate": true,
+      "blocks_revenue": true,
+      "recurring": false,
+      "typical_milestone": "First B2B contract requiring a data processing agreement",
+      "department": "Legal",
+      "criticality": "core",
+      "existential_at": [],
+      "model_fit": [
+        "recurring",
+        "sales_led",
+        "self_serve"
+      ],
+      "deliverable": {
+        "artifact": "dpa_package",
+        "sections": [
+          "Data Flow Map",
+          "Subprocessor List",
+          "DPA Body and SCCs",
+          "Security Measures Annex",
+          "Signature Block"
+        ],
+        "max_words": 1800
+      },
+      "rubric": "Passes if a B2B buyer's procurement team can countersign the DPA and clear the subprocessor and data-flow questions without requesting structural redlines."
+    },
+    {
+      "id": "regulatory-licensing-roadmap",
+      "title": "Regulatory and Licensing Roadmap",
+      "level": 2,
+      "file": "playbooks/level-2/218-regulatory-licensing-roadmap.md",
+      "applies_to": {
+        "types": [
+          "*"
+        ],
+        "requires_traits": [
+          "regulated"
+        ],
+        "excluded_traits": []
+      },
+      "relevance": "conditional",
+      "selection_hint": "Select when the business touches a regulated domain (financial services, payments, health, insurance, food, alcohol, transport, crypto custody) or operates in jurisdictions with licensing gates before launch.",
+      "depends_on": [],
+      "soft_after": [
+        "opportunity-scan"
+      ],
+      "produces": [
+        "licensing_roadmap",
+        "regulatory_gate_register",
+        "compliance_lead_time_schedule"
+      ],
+      "consumes": [],
+      "effort": "M",
+      "leverage": "high",
+      "reversibility": "medium",
+      "human_gate": true,
+      "blocks_revenue": true,
+      "recurring": false,
+      "typical_milestone": "building",
+      "department": "Legal",
+      "criticality": "core",
+      "existential_at": [
+        "building",
+        "launched"
+      ],
+      "model_fit": [
+        "recurring",
+        "transactional",
+        "marketplace",
+        "physical_goods",
+        "local"
+      ],
+      "deliverable": {
+        "artifact": "licensing_roadmap",
+        "sections": [
+          "Regulated activities and triggering rules",
+          "Required licenses and registrations by jurisdiction",
+          "Gate sequence with dependencies and lead times",
+          "Owner, cost, and renewal cadence per gate",
+          "Launch-blocking vs operate-while-pending items"
+        ],
+        "max_words": 900
+      },
+      "rubric": "Passes if every revenue-enabling activity is mapped to a specific named license or a documented exemption, each gate has an owner, a lead time, and a position in a dependency-ordered sequence."
     }
   ]
 }

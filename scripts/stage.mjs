@@ -49,8 +49,12 @@ function loadIndex() {
 // simply ignored (a business that does not select that playbook is unaffected).
 const CONSTRAINT_SURFACE = {
   regulatory_legal: ["kyc-aml-program", "tos-and-privacy-policy", "token-and-licensing-strategy", "security-baseline", "hardware-certification-and-compliance"],
-  no_revenue: ["pricing-research", "packaging-tier-design", "unit-economics", "pricing-page-copy-layout", "freemium-trial-decision", "ad-revenue-and-yield"],
-  runway_burn: ["unit-economics", "financial-model-forecast", "pricing-research", "ad-revenue-and-yield"],
+  // EARLY money-validation plays lead so a pre-revenue company at building/landing has reachable,
+  // promoted revenue work (willingness-to-pay, revenue model, a price smoke test, pre-sales/LOIs)
+  // instead of falling through to generic foundation work; the mature pricing/unit-economics plays
+  // (stage-gated above) follow for a revenue-stage company.
+  no_revenue: ["willingness-to-pay-research", "revenue-model-selection", "pricing-smoke-test", "pre-sales-and-letters-of-intent", "pricing-research", "packaging-tier-design", "unit-economics", "pricing-page-copy-layout", "freemium-trial-decision", "ad-revenue-and-yield"],
+  runway_burn: ["revenue-model-selection", "willingness-to-pay-research", "unit-economics", "financial-model-forecast", "pricing-research", "ad-revenue-and-yield"],
   tech_scale: ["observability-setup", "incident-response", "data-backup-recovery", "security-baseline"],
   // Forward-looking acquisition work, not backward L0 validation. The EARLY plays (first-users-
   // traction, beachhead) lead the list so a building/landing company with no users actually has
