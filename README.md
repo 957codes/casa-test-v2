@@ -16,16 +16,23 @@ machine, against the same files, with no account and no cloud.
 
 ## What it gives you
 
-- A library of company-building playbooks (the "what to do").
-- A router that selects the playbooks relevant to your business and sequences
-  them into a personalized build map (the "what to do when").
-- An always-on advisor that recommends your single next best action on every
-  session.
+- A library of 169 company-building playbooks (the "what to do"), each owned by one of
+  eleven departments (Strategy, Brand, Product, Engineering, Data, Growth, Sales, Finance,
+  Legal, Success, Operations).
+- A department board: your whole company as lanes, one per function, each with its own
+  north star. Casa diagnoses the ONE binding constraint that is the company's do-or-die
+  problem right now and leads the departments that resolve it, so you always know which
+  function to push and why.
+- A constraint-first router that selects the playbooks relevant to your business,
+  sequences them by dependency, and ranks them so the work that resolves your binding
+  constraint leads, not a generic checklist.
+- An always-on advisor that recommends your single next best action on every session,
+  plus a parallel "wave" mode that drafts several independent plays at once.
 - Recurring loops for the work that never finishes (metrics, customers, growth).
-- A company brain: durable, versioned, plain-text memory that makes every run
-  compound on the last.
-- An optional local Console: a visual, interactive view of the whole build map,
-  the company's health, and its loops, that can also start work for you.
+- A company brain: durable, versioned, plain-text memory that makes every run compound
+  on the last.
+- An optional local Console: a visual, interactive department board with the company's
+  health and its loops, that can also start work for you.
 
 ## The Console (optional, local, interactive)
 
@@ -35,9 +42,12 @@ works without it. Launch it with `/casa-console`.
 
 What you can do in it:
 
-- See the whole company at a glance. The build map renders as a node graph, grouped
-  by level, colored by one of five states (done, agent can do it, needs your input,
-  needs your approval, blocked by earlier work), with the items awaiting you flagged.
+- See the whole company at a glance. The default view is the department board: one lane
+  per function, each showing its north star, its standing (Lead, Support, Maintenance, or
+  Idle), and its single next move, under a banner that names the binding constraint and the
+  lanes leading on it. Click a lane to expand its full catalog of plays by status. The
+  level-by-level build map is still there as a reference view, colored by one of five states
+  (done, agent can do it, needs your input, needs your approval, blocked by earlier work).
 - Open any node for its detail. Each node shows a plain-language TLDR and advisor
   notes, the gradeable deliverable spec (what a good output contains), a quality
   score for finished work with its gaps, the rendered output, recent activity, and a
@@ -64,24 +74,43 @@ How it stays safe and subscription-only:
 - The Console binds to localhost only, adds no dependencies to the plugin runtime,
   and reads the same plain-text brain you can read in the terminal.
 
-## The level model
+## How Casa organizes the work: departments
 
-Casa organizes the work into levels. You move through them in order, gated by
-measurable criteria. The router personalizes which playbooks fire inside each
-level for your business type.
+Casa organizes a company the way a founder thinks about it: by DEPARTMENT. Every playbook
+belongs to one of eleven functions, and Casa shows your company as a board of department
+lanes, each with its own north star (a projection of the one company north star onto that
+function).
 
-| Level | Name | Goal |
-|---|---|---|
-| Always-on | Foundations | Safety gates and cost governance |
-| Level 0 | Ideation and Validation | Find a validated opportunity worth building |
-| Level 1 | Commit and Incorporate | Pick the wedge, form the entity, secure the brand |
-| Level 2 | Product and Infra Foundation | Stand up hosting, security, analytics, pricing |
-| Level 3 | Build and Pre-launch | Build the product, prep launch, start channels |
-| Level 4 | Launch | Coordinated launch burst |
-| Level 5 | First Customers and PMF | Iterate to retention, establish customer success |
-| Level 6 | Scale Acquisition | Compound via paid, organic, partnerships |
-| Level 7 | Enterprise Sales (conditional) | Upmarket motion for high-ACV B2B |
-| Level 8 | Growth Finance and Fundraise | Institutionalize finance, raise capital |
+| Department | What it owns |
+|---|---|
+| Strategy | The company north star, the binding constraint, the driver tree |
+| Product | Activation and time to first value |
+| Engineering | Shipping the product at reliable quality |
+| Data | Instrumentation, so every other lane has a real number |
+| Growth | Activated acquisition at a sustainable cost |
+| Sales | Pipeline to closed revenue |
+| Success | Retention and expansion |
+| Finance | Runway, pricing, and unit economics |
+| Legal | Entity, contracts, and regulatory clearance |
+| Brand | Positioning, narrative, and message resonance |
+| Operations | Cost to serve, fulfillment, and recurring-loop discipline |
+
+The board is a LENS, not a separate planner. Under the hood the engine still computes one
+global, constraint-aware ranking; a department lane is a filtered view of it, never its own
+ranking. That is what keeps the advice specific to YOUR company instead of a generic
+per-function checklist.
+
+The one thing that decides priority is the binding constraint: the do-or-die problem that,
+left unsolved, kills the business at its current stage (no users, no revenue, a regulatory
+gate, runway, reliability at scale, capacity). Casa names it, leads the departments that
+resolve it (up to four co-leads), and sharpens the push by how far you are from your target.
+Departments with no urgent work this cycle sit honestly as Support, Maintenance, or Idle, so
+the board never pretends every lane is on fire.
+
+Maturity still matters, but as an INTERNAL gate, not the founder-facing frame. Each play
+carries a level (0 to 8) that controls when it becomes ready: you cannot run a launch play
+before there is a product, and a play never surfaces before its prerequisites exist. You see
+departments and a binding constraint; the engine sequences the work underneath.
 
 ## Commands
 
@@ -95,7 +124,7 @@ level for your business type.
 | `/casa-map` | Show and approve your personalized build map |
 | `/casa-loops` | Show and run recurring loops (pulse, retro, content, close) |
 | `/casa-pay` | Run paid actions (domains, hosting, media, research) through Capx Pay |
-| `/casa-console` | Launch the local visual Console (build map, health, loops) in your browser |
+| `/casa-console` | Launch the local visual Console (department board, health, loops) in your browser |
 | `/casa-serve` | Execute the work the Console queued, one intent at a time, in your session |
 
 ### Craft and review
@@ -124,7 +153,7 @@ These do the work and check it.
 2. Install the plugin:
 
    ```
-   /plugin marketplace add https://github.com/957codes/casa-test-v1
+   /plugin marketplace add https://github.com/957codes/casa-test-v2
    /plugin install capx-casa
    ```
 
@@ -140,8 +169,9 @@ These do the work and check it.
    gets validated first; an existing business skips ahead, with anything you have not
    done yet surfaced as catch-up work.
 
-4. Every time you reopen the project, Casa greets you with your level, progress, and
-   top priority. Run `/casa-priority` to re-evaluate, or `/casa-next` to act.
+4. Every time you reopen the project, Casa greets you with your binding constraint, the
+   department lanes leading on it, and your top priority. Run `/casa-board` to see the whole
+   company by department, `/casa-priority` to re-evaluate, or `/casa-next` to act.
 
 See `docs/ONBOARDING.md` for the full walkthrough.
 
