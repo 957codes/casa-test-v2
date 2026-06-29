@@ -9,12 +9,12 @@ const BUILD_MAP = {
   current_level: 1,
   levels: [
     { level: "always-on", name: "Foundations", nodes: [
-      { id: "cost-governance", title: "Cost governance", status: "ready", recurring: true, depends_on: [] },
+      { id: "cost-governance", title: "Cost governance", status: "ready", recurring: true, depends_on: [], department: "Operations" },
     ] },
     { level: 0, name: "Ideation and Validation", nodes: [
-      { id: "opportunity-scan", title: "Opportunity scan", status: "done", depends_on: [], human_gate: false, on_critical_path: true, leverage: "high" },
-      { id: "entity-formation", title: "Entity formation", status: "ready", depends_on: ["opportunity-scan"], human_gate: true },
-      { id: "mvp-scoping", title: "MVP scoping", status: "blocked", depends_on: ["entity-formation"] },
+      { id: "opportunity-scan", title: "Opportunity scan", status: "done", depends_on: [], human_gate: false, on_critical_path: true, leverage: "high", department: "Strategy" },
+      { id: "entity-formation", title: "Entity formation", status: "ready", depends_on: ["opportunity-scan"], human_gate: true, department: "Legal" },
+      { id: "mvp-scoping", title: "MVP scoping", status: "blocked", depends_on: ["entity-formation"], department: "Product" },
     ] },
   ],
 };
@@ -47,10 +47,11 @@ test("toFoundry: status and human_gate map to Foundry task states", () => {
   assert.equal(byId.get("opportunity-scan").onCriticalPath, true);
 });
 
-test("toFoundry: departments are derived from the playbook", () => {
+test("toFoundry: task owner is the node's authored department (no id/title heuristic)", () => {
   const byId = new Map(toFoundry({ buildMap: BUILD_MAP, profile: PROFILE }).tasks.map((t) => [t.id, t]));
   assert.equal(byId.get("entity-formation").owner, "Legal");
   assert.equal(byId.get("opportunity-scan").owner, "Strategy");
+  assert.equal(byId.get("mvp-scoping").owner, "Product");
 });
 
 test("toFoundry: an empty brain does not throw", () => {

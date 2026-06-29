@@ -5,9 +5,11 @@
 
 export type TaskState = "completed" | "agent" | "input" | "approval" | "locked";
 
+// The canonical 11 departments authored on every playbook (scripts/build-index.mjs ALLOWED).
+// The adapter only ever emits one of these as a task owner.
 export type Department =
-  | "You" | "Brand" | "Engineering" | "Legal" | "Design"
-  | "Operations" | "Marketing" | "Finance" | "Sales" | "Support";
+  | "Strategy" | "Brand" | "Product" | "Engineering" | "Data"
+  | "Growth" | "Sales" | "Finance" | "Legal" | "Success" | "Operations";
 
 // The reasoning layer the bridge surfaces per node.
 export type Criticality = "existential" | "core" | "growth" | "optional";

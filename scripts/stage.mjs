@@ -180,7 +180,8 @@ export function deriveStage(answers, playbooks) {
     )
     .map((m) => m.id);
 
-  return { profile, start_level, completed_seed, gaps_not_applicable };
+  const binding_constraint = deriveBindingConstraint(answers, playbooks, memberIds);
+  return { profile, start_level, completed_seed, gaps_not_applicable, binding_constraint };
 }
 
 // The INITIAL pulse, derived from the Core-pass intake answers, so the very first build map
@@ -230,6 +231,35 @@ const CONSTRAINT_DELTA = {
   hiring_capacity: { Operations: 0.3 },
 };
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
+
+// The constraint's lead departments: the ones its pulse delta already tilts, strongest first,
+// CAPPED AT 4 (co-leading is honest -- early companies are multi-headed -- but a "lead set" of
+// every department is no lead at all). Derived from CONSTRAINT_DELTA so there is one source of
+// truth for which functions a constraint mobilizes. Unknown archetype => no leads.
+export function leadDepartments(archetype) {
+  const d = CONSTRAINT_DELTA[archetype];
+  if (!d) return [];
+  return Object.entries(d).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([dept]) => dept);
+}
+
+// The BINDING CONSTRAINT as first-class state (v2). Read DIRECTLY by router.nextActions so the
+// constraint keeps steering even if pulse.json is deleted or regenerated. surface_ids are the
+// constraint's key plays that are MEMBERS of this company's build (so the list is real work, not a
+// generic label). win_definition is carried through verbatim for now; Phase 2 makes it structured
+// {metric_id, current_value, target_value, deadline} and feeds the gap into the sort. Returns null
+// when the founder named no constraint -- the caller must then fail loud, never serve generic ranking.
+export function deriveBindingConstraint(answers, playbooks, memberIds) {
+  const archetype = answers.constraint_archetype || null;
+  if (!archetype) return null;
+  const members = memberIds || new Set(playbooks.map((p) => p.id));
+  const surface_ids = (CONSTRAINT_SURFACE[archetype] || []).filter((id) => members.has(id));
+  return {
+    archetype,
+    surface_ids,
+    lead_departments: leadDepartments(archetype),
+    win_definition: answers.win_definition || "",
+  };
+}
 
 export function deriveInitialPulse(answers, playbooks) {
   const byDepartment = {};
@@ -283,6 +313,9 @@ function main() {
     const statePath = join(brainDir, "state.json");
     const prev = existsSync(statePath) ? JSON.parse(readFileSync(statePath, "utf8")) || {} : {};
     const state = { ...prev, completed: result.completed_seed, start_level: result.start_level };
+    // The binding constraint is first-class state, read directly by the router (survives pulse.json
+    // regeneration). Only written when the founder named one; its absence is what triggers fail-loud.
+    if (result.binding_constraint) state.binding_constraint = result.binding_constraint;
     writeFileSync(statePath, JSON.stringify(state, null, 2));
     // Seed the initial business-aware pulse, but never clobber a richer hand-authored one.
     const pulsePath = join(brainDir, "pulse.json");

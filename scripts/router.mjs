@@ -205,6 +205,20 @@ function priorityWeight(pb, w) {
   return w.default ?? 1;
 }
 
+// The binding constraint steers ranking DIRECTLY, not only laundered through pulse.json. Its
+// surface plays are merged into the effective promote set so they get the existential tier bump
+// (headlineTier) and promote weight INSIDE the engine -- the steering survives a deleted or
+// regenerated pulse.json. When there is no constraint (or it has no surface plays), this returns
+// the caller's weights UNCHANGED, so nextActions output is byte-identical to the pre-constraint
+// engine and every existing golden holds. The constraint-present path is allowed to differ; that
+// is the point (it is what fixes the eval's constraint-blind generic ranking).
+function constraintWeights(weights, bindingConstraint) {
+  const surface = bindingConstraint && Array.isArray(bindingConstraint.surface_ids) ? bindingConstraint.surface_ids : [];
+  if (!surface.length) return weights;
+  const base = weights || {};
+  return { ...base, promote_ids: [...new Set([...(base.promote_ids || []), ...surface])] };
+}
+
 // Stage ladder, duplicated from stage.mjs to avoid a router<-stage import cycle (a test
 // asserts the two stay in sync). stageOf maps a company level back to its stage tier, which
 // is what existential_at and stageFit are expressed in.
@@ -332,7 +346,7 @@ function buildMap(playbooks, profile, { completed = [], level = 0 } = {}) {
     if (!byLevel.has(k)) byLevel.set(k, []);
     const status = completedSet.has(pb.id) ? "done" : ready(pb, ctx) ? "ready" : "blocked";
     byLevel.get(k).push({
-      id: pb.id, title: pb.title, status, slack: slack.get(pb.id),
+      id: pb.id, title: pb.title, level: pb.level, status, slack: slack.get(pb.id),
       on_critical_path: slack.get(pb.id) === 0, leverage: pb.leverage, effort: pb.effort,
       human_gate: pb.human_gate, blocks_revenue: pb.blocks_revenue, recurring: pb.recurring,
       department: pb.department || null, depends_on: pb.depends_on,
@@ -344,21 +358,32 @@ function buildMap(playbooks, profile, { completed = [], level = 0 } = {}) {
     level: k, name: LEVEL_NAMES[k] || String(k),
     nodes: byLevel.get(k).sort((a, b) => a.slack - b.slack),
   }));
-  return { member_count: members.length, levels, skipped };
+  // Department projection over the SAME node objects (v2 board lens). Additive: existing consumers
+  // read `levels`; the board reads `departments`. Level becomes within-lane vertical position.
+  const allNodes = levels.flatMap((l) => l.nodes);
+  const byDept = new Map();
+  for (const n of allNodes) { const d = n.department || "Operations"; if (!byDept.has(d)) byDept.set(d, []); byDept.get(d).push(n); }
+  const departments = [...byDept.keys()].sort().map((d) => ({
+    department: d, nodes: byDept.get(d).sort((a, b) => levelKey(a.level) - levelKey(b.level) || a.slack - b.slack),
+  }));
+  return { member_count: members.length, levels, departments, skipped };
 }
 
-function nextActions(playbooks, profile, { completed = [], level = 0, weights = null } = {}) {
+function nextActions(playbooks, profile, { completed = [], level = 0, weights = null, binding_constraint = null, department = null } = {}) {
   const { members } = select(playbooks, profile);
   const { slack } = sequence(members);
   const completedSet = new Set(completed);
   const flags = achievedFlags(profile, completed, level);
   const ctx = readinessCtx(playbooks, members, completedSet, flags, level);
   const fit = { currentLevel: level, stage: stageOf(level), models: modelSet(profile) };
+  // Fold the binding constraint into the effective weights. No constraint => effWeights === weights
+  // => byte-identical ranking (goldens preserved).
+  const effWeights = constraintWeights(weights, binding_constraint);
   const scored = members
     .filter((pb) => ready(pb, ctx))
     .map((pb) => ({ id: pb.id, title: pb.title, level: pb.level, department: pb.department || null,
-      score: score(pb, slack.get(pb.id), flags, weights, fit),
-      tier: headlineTier(pb, fit.stage, weights),
+      score: score(pb, slack.get(pb.id), flags, effWeights, fit),
+      tier: headlineTier(pb, fit.stage, effWeights),
       effective_criticality: effectiveCriticality(pb, fit.stage),
       human_gate: pb.human_gate, blocks_revenue: pb.blocks_revenue, leverage: pb.leverage, effort: pb.effort }))
     // tier first (do-or-die and the founder's focus lead), then the pulse-weighted score within tier
@@ -384,7 +409,10 @@ function nextActions(playbooks, profile, { completed = [], level = 0, weights = 
       .slice(0, 4)
       .map((m) => m.id);
   }
-  return scored;
+  // --department is a pure POST-ranking filter (the board's lane view): the same global, constraint-
+  // aware ranking with non-matching departments removed. It provably cannot reorder, so a department
+  // lane can never become its own ranker -- the structural guard against the constraint-blind regression.
+  return department ? scored.filter((a) => a.department === department) : scored;
 }
 
 // ---- CLI ----
@@ -395,6 +423,8 @@ function parseArgs(argv) {
     else if (argv[i] === "--completed") a.completed = argv[++i].split(",").map((s) => s.trim()).filter(Boolean);
     else if (argv[i] === "--level") a.level = Number(argv[++i]);
     else if (argv[i] === "--weights") a.weights = argv[++i];
+    else if (argv[i] === "--department") a.department = argv[++i];
+    else if (argv[i] === "--constraint") a.constraint = argv[++i];
     else a._.push(argv[i]);
   }
   return a;
@@ -423,10 +453,12 @@ function main() {
   const level = args.level ?? 0;
   const completed = args.completed ?? [];
   const weights = args.weights ? (loadProfile(args.weights).weights ?? loadProfile(args.weights)) : null;
+  // --constraint accepts a state.json (reads .binding_constraint) or a bare binding_constraint object.
+  const binding_constraint = args.constraint ? (loadProfile(args.constraint).binding_constraint ?? loadProfile(args.constraint)) : null;
 
   if (cmd === "plan") {
     const map = buildMap(playbooks, profile, { completed, level });
-    const actions = nextActions(playbooks, profile, { completed, level, weights });
+    const actions = nextActions(playbooks, profile, { completed, level, weights, binding_constraint });
     console.log(`Business: ${profile.one_liner || profile.company_name || profileFile}`);
     console.log(`Type: ${[profile.primary_type, profile.secondary_type].filter(Boolean).join(" + ")}  traits: ${arr(profile.traits).join(", ")}`);
     console.log(`Selected ${map.member_count}/${playbooks.length} playbooks. Skipped ${map.skipped.length}.`);
@@ -446,9 +478,11 @@ function main() {
       console.log(`\nwrote ${join(args.out, "build-map.json")} and NOW.md`);
     }
   } else if (cmd === "next") {
-    const actions = nextActions(playbooks, profile, { completed, level, weights });
-    console.log(`Next actions (level ${level}, ${completed.length} completed):`);
-    for (const a of actions.slice(0, 8)) console.log(`  ${a.score}  ${a.id}  (L${a.level}, ${a.leverage})${a.human_gate ? " [gate]" : ""}${a.blocks_revenue ? " [revenue]" : ""}`);
+    const actions = nextActions(playbooks, profile, { completed, level, weights, binding_constraint, department: args.department || null });
+    const lens = args.department ? ` department=${args.department}` : "";
+    const con = binding_constraint?.archetype ? ` constraint=${binding_constraint.archetype}` : "";
+    console.log(`Next actions (level ${level}, ${completed.length} completed${lens}${con}):`);
+    for (const a of actions.slice(0, 8)) console.log(`  ${a.score}  ${a.id}  (L${a.level}, ${a.department || "-"}, ${a.leverage})${a.human_gate ? " [gate]" : ""}${a.blocks_revenue ? " [revenue]" : ""}`);
   } else { console.error(`unknown command: ${cmd}`); process.exit(2); }
 }
 

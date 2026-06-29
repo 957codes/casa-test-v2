@@ -27,6 +27,16 @@ const LEVEL_NAMES = {
 };
 const levelKey = (l) => (l === "always-on" ? -1 : Number(l));
 const today = () => new Date().toISOString().slice(0, 10);
+
+// Fail-loud floor: when the founder named NO binding constraint, the ranking is generic and the
+// Console must say so. A type-default lead lane is offered as an honestly-labeled guess, never as a
+// diagnosis. This is a floor, not a substitute for running the constraint step of /casa-start.
+const DEFAULT_LEAD_BY_TYPE = {
+  saas: "Product", marketplace: "Growth", ecommerce: "Growth", hardware: "Engineering",
+  crypto: "Engineering", fintech: "Finance", services: "Operations", consumer: "Growth",
+  devtool: "Engineering", content: "Growth", hardware_devtool: "Engineering",
+};
+const defaultLead = (profile) => DEFAULT_LEAD_BY_TYPE[profile.primary_type] || "Strategy";
 const playbooks = () => JSON.parse(readFileSync(join(repo, "playbooks", "_index.json"), "utf8")).playbooks;
 const titleOf = (pb) => new Map(pb.map((p) => [p.id, p.title]));
 
@@ -123,14 +133,23 @@ function sync(dir) {
   const level = currentLevel(pb, profile, state);
   const pulse = existsSync(join(dir, "pulse.json")) ? JSON.parse(readFileSync(join(dir, "pulse.json"), "utf8")) : null;
   const weights = pulse?.weights || null;
+  // The binding constraint is read from state and passed DIRECTLY to the engine (not laundered
+  // through pulse.json). Its absence is surfaced loudly so the Console never presents generic
+  // ranking as if it were diagnosed.
+  const binding_constraint = state.binding_constraint || null;
   const map = buildMap(pb, profile, { completed, level });
-  const actions = nextActions(pb, profile, { completed, level, weights });
+  const actions = nextActions(pb, profile, { completed, level, weights, binding_constraint });
   const due = dueLoops(dir, profile, level, state);
   const spend = readSpend(dir);
   const titles = titleOf(pb);
   const ns = northStar(profile, level);
 
-  writeFileSync(join(dir, "build-map.json"), JSON.stringify({ business_profile: profile, current_level: level, active_north_star: ns, mature_north_star: profile.north_star || null, ...map }, null, 2));
+  writeFileSync(join(dir, "build-map.json"), JSON.stringify({
+    business_profile: profile, current_level: level, active_north_star: ns, mature_north_star: profile.north_star || null,
+    binding_constraint, constraint_missing: !binding_constraint,
+    default_lead: binding_constraint ? null : defaultLead(profile),
+    ...map,
+  }, null, 2));
   writeFileSync(join(dir, "NOW.md"), nowText(profile, actions, level, due, spend, ns));
 
   // self-update the CLAUDE.md AUTO blocks (T1-T5)

@@ -185,14 +185,15 @@ export const SendIcon = (p: IconProps) => (
 // --- Department glyph (small letter token) ---
 
 export const deptInitial: Record<Department, string> = {
-  You: "Y",
+  Strategy: "St",
   Brand: "B",
+  Product: "P",
   Engineering: "E",
-  Legal: "L",
-  Design: "D",
-  Operations: "O",
-  Marketing: "M",
-  Finance: "F",
+  Data: "Da",
+  Growth: "G",
   Sales: "S",
-  Support: "Su",
+  Finance: "F",
+  Legal: "L",
+  Success: "Su",
+  Operations: "O",
 };

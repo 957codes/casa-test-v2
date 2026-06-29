@@ -136,14 +136,16 @@ gaps instead of answering everything cold.
      ```
      { "focus": [...], "win": { "definition": "...", "horizon": "..." }, "constraint": "...",
        "anti_priorities": [...], "risk_appetite": "...", "resourcing": "...", "one_thing": "...",
-       "weights": { "byDepartment": { "Marketing": 0.4, "Finance": 1.6 }, "byLevel": { "4": 0.4 },
+       "weights": { "byDepartment": { "Growth": 0.4, "Finance": 1.6 }, "byLevel": { "4": 0.4 },
                     "promote_ids": [...], "demote_ids": [...], "default": 1.0 } }
      ```
 
-     Departments are Brand, Engineering, Legal, Design, Operations, Marketing, Finance,
-     Sales, Support. Down-weight what they are not doing yet, up-weight their focus. Be
-     decisive but conservative: the weights nudge the order, your judgment in casa-next
-     makes the final call.
+     Departments are the canonical 11: Strategy, Brand, Product, Engineering, Data, Growth,
+     Sales, Finance, Legal, Success, Operations. (These are the values authored on every
+     playbook and validated by build-index; do not invent Marketing/Design/Support, which map
+     to Growth/Product/Success.) Down-weight what they are not doing yet, up-weight their focus.
+     Be decisive but conservative: the weights nudge the order, your judgment in casa-next makes
+     the final call.
 
    Then re-render so the weights take effect:
 

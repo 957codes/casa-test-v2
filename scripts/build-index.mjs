@@ -30,29 +30,6 @@ const REQUIRED = [
   "recurring", "typical_milestone", "department", "criticality",
 ];
 
-// Fallback department heuristic over the 11-department vocabulary. A hand-authored
-// `department` field in the frontmatter overrides this (departments are authored, this is
-// only a safety net for an untagged new playbook). north-star/funnel/cohort/event-taxonomy
-// (metric READING) are Data; analytics/infra BUILD work is Engineering.
-const DEPARTMENT_RULES = [
-  [/(north-star|funnel|cohort|event-taxonomy|dashboard|experimentation|metric|attribution-model)/, "Data"],
-  [/(brand|naming|positioning|category|visual-identity|tone|messaging|logo)/, "Brand"],
-  [/(entity|incorporat|tos|privacy|trademark|legal|founding-docs|compliance|terms-of|soc2)/, "Legal"],
-  [/(pricing|unit-econ|financ|fundrais|forecast|packaging|burn|runway|revenue-model|cogs|supplier-sourcing|\bltv\b|\bcac\b)/, "Finance"],
-  [/(onboarding|usability|prd|feature-prioritization|product-spec|wireframe|\bux\b|design|prototype|merchandising)/, "Product"],
-  [/(sales|discovery|contract|deal|pipeline|enterprise|outbound|quota|account-exec|demo-script|objection|icp-target)/, "Sales"],
-  [/(support|nps|csat|churn|customer-success|helpdesk|winback|ticketing|community)/, "Success"],
-  [/(seo|ads|content|referral|affiliate|influencer|launch|product-hunt|newsletter|email|social|retarget|discount|promo|campaign|nurture|creative|blog|press|waitlist|conversion|\bcro\b|paid|webinar|podcast|partnership|distribution|growth|marketing)/, "Growth"],
-  [/(hosting|repo|stack|security|observability|analytics|deploy|tech-stack|infra|database|\bapi\b|ci-cd|monitoring|incident|backup)/, "Engineering"],
-  [/(opportunity|problem-validation|market-sizing|jtbd|red-team|why-now|thesis|beachhead|competitive)/, "Strategy"],
-  [/(mvp|interview|research|hiring|process|inventory|fulfillment|shipping|returns|operations)/, "Operations"],
-];
-function deriveDepartment(id, title) {
-  const s = `${id} ${title}`.toLowerCase();
-  for (const [re, dept] of DEPARTMENT_RULES) if (re.test(s)) return dept;
-  return "Operations";
-}
-
 // Deterministic criticality SEED (the survival consequence of skipping the play at its
 // stage). A hand-authored `criticality` overrides this; the seed is the floor + a drift
 // guard. Order matters: existential is the strongest claim.
@@ -143,7 +120,7 @@ for (const file of files) {
     effort: fm.effort, leverage: fm.leverage, reversibility: fm.reversibility,
     human_gate: !!fm.human_gate, blocks_revenue: !!fm.blocks_revenue,
     recurring: !!fm.recurring, typical_milestone: fm.typical_milestone,
-    department: fm.department || deriveDepartment(fm.id, fm.title || ""),
+    department: fm.department, // authored + REQUIRED + ALLOWED-validated; no heuristic fallback
     criticality, existential_at: arr(fm.existential_at), model_fit: arr(fm.model_fit),
     // Optional gradeable output spec (the dashboard scores a completed deliverable against these).
     deliverable: fm.deliverable || null, rubric: fm.rubric || null,

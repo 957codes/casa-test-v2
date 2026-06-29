@@ -4,26 +4,10 @@
 
 const levelKey = (l) => (l === "always-on" ? -1 : Number(l));
 
-// Map a playbook to a department for the colored node graph and the per-area view.
-// Casa playbooks are organized by level, not department, so we derive one from the id
-// and title. A `department` field on playbooks can replace this later.
-const DEPARTMENT_RULES = [
-  [/(north-star|funnel|cohort|event-taxonomy|dashboard|experimentation|metric)/, "Data"],
-  [/(brand|naming|positioning|category|visual-identity|tone|messaging)/, "Brand"],
-  [/(entity|incorporat|tos|privacy|trademark|legal|founding-docs|compliance)/, "Legal"],
-  [/(design|onboarding-flow|landing|wireframe|ux|prd|prototype|merchandising)/, "Product"],
-  [/(pricing|unit-econ|financ|fundrais|model|packaging|burn|runway|forecast|cogs|supplier)/, "Finance"],
-  [/(sales|discovery|contract|deal|pipeline|enterprise|outbound)/, "Sales"],
-  [/(support|nps|csat|churn|customer-success|helpdesk|winback|community)/, "Success"],
-  [/(growth|seo|ads|content|referral|affiliate|influencer|launch|product-hunt|email|newsletter|social|retarget)/, "Growth"],
-  [/(hosting|repo|stack|security|observability|analytics|deploy|tech|infra|database|incident|backup)/, "Engineering"],
-  [/(opportunity|problem-validation|market-sizing|jtbd|red-team|why-now|thesis|beachhead|competitive)/, "Strategy"],
-];
-function departmentOf(id, title) {
-  const s = `${id} ${title}`.toLowerCase();
-  for (const [re, dept] of DEPARTMENT_RULES) if (re.test(s)) return dept;
-  return "Operations";
-}
+// Every build-map node carries its authored department (router.buildMap copies pb.department,
+// which is REQUIRED + validated on all playbooks). The old id/title regex fallback was a
+// generic-template misclassifier and is gone; an undepartmented node falls back to Operations.
+const departmentOf = (node) => node.department || "Operations";
 
 // build-map status (+ human_gate, + live work) -> Foundry task state. A node with a pending or
 // running intent in the queue renders as "agent" (working) so the founder sees live progress.
@@ -150,7 +134,7 @@ export function toFoundry(brain, enrich = {}) {
         id: n.id,
         title: n.title,
         state: st,
-        owner: n.department || departmentOf(n.id, n.title),
+        owner: departmentOf(n),
         stageId: String(lvl.level),
         dependsOn: n.depends_on || [],
         description: n.title,
@@ -188,7 +172,7 @@ export function toFoundry(brain, enrich = {}) {
   const nextActionsView = (next || []).map((a) => {
     const unblocks = (a.unblocks || []).map((id) => titleById.get(id)).filter(Boolean);
     return {
-      id: a.id, title: a.title, owner: a.department || departmentOf(a.id, a.title),
+      id: a.id, title: a.title, owner: departmentOf(a),
       criticality: a.effective_criticality || null,
       criticalityLabel: CRIT_LABEL[a.effective_criticality] || "Recommended",
       tier: a.tier ?? 0,
@@ -201,10 +185,12 @@ export function toFoundry(brain, enrich = {}) {
 
   // Focus: the founder's win and binding constraint (from the pulse) plus the north star, so the
   // next-actions are framed by what THIS company is actually trying to do, not a generic curriculum.
+  // Keys are the engine's real constraint archetypes (scripts/stage.mjs CONSTRAINT_SURFACE).
+  // Unknown keys humanize via the _ -> space fallback below.
   const CONSTRAINT_LABEL = {
-    no_users: "No users yet (cold start)", no_distribution: "No distribution channel yet",
-    no_revenue: "No revenue yet", no_product: "No shipped product yet", no_pmf: "No product-market fit yet",
-    no_capital: "Runway is the constraint", no_team: "Solo, no team yet", no_liquidity: "No marketplace liquidity yet",
+    no_users: "No users yet (cold start)", no_revenue: "No revenue yet",
+    runway_burn: "Runway is the constraint", regulatory_legal: "Regulatory clearance is the gate",
+    tech_scale: "Tech reliability at scale", hiring_capacity: "Team capacity is the constraint",
   };
   const ns = buildMap.active_north_star || null;
   const focus = {
