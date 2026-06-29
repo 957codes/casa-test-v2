@@ -8,11 +8,12 @@ import { Dashboard } from "./components/Dashboard";
 import { NextView } from "./components/NextView";
 import { LoopsView } from "./components/LoopsView";
 import { OrgView } from "./components/OrgView";
+import { DepartmentBoard } from "./components/DepartmentBoard";
 import { taskById, attentionQueue, type Task } from "./mockData";
 import { subscribeBrain } from "./feed";
 
 export default function App() {
-  const [view, setView] = useState<View>("next");
+  const [view, setView] = useState<View>("board");
   const [selected, setSelected] = useState<Task | null>(null);
   // Bump on every live brain update so the components re-read the refreshed data.
   const [, setTick] = useState(0);
@@ -44,6 +45,8 @@ export default function App() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar onOpenAttention={() => setView("dashboard")} />
+
+        {view === "board" && <DepartmentBoard onOpenTask={openTaskById} />}
 
         {view === "next" && <NextView onOpenTask={selectTaskById} />}
 

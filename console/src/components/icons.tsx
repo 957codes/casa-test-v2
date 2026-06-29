@@ -26,6 +26,15 @@ export const CheckIcon = (p: IconProps) => (
   </svg>
 );
 
+// Board: department lanes (kanban columns)
+export const BoardIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <rect x="3" y="4" width="5" height="16" rx="1.2" />
+    <rect x="9.5" y="4" width="5" height="11" rx="1.2" />
+    <rect x="16" y="4" width="5" height="7" rx="1.2" />
+  </svg>
+);
+
 // Agent: a four-point spark / star burst
 export const SparkIcon = (p: IconProps) => (
   <svg {...base(p)}>

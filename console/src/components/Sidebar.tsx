@@ -1,10 +1,10 @@
 // Slim left rail nav. Next is the home view (what to do now); the Build map is the
 // reference behind it. Then Health, Loops, and Company.
 
-import { MapIcon, InboxIcon, OrgIcon, LoopsIcon, NextIcon } from "./icons";
+import { MapIcon, InboxIcon, OrgIcon, LoopsIcon, NextIcon, BoardIcon } from "./icons";
 import { company } from "../mockData";
 
-export type View = "next" | "map" | "dashboard" | "loops" | "org";
+export type View = "board" | "next" | "map" | "dashboard" | "loops" | "org";
 
 interface Props {
   view: View;
@@ -14,6 +14,7 @@ interface Props {
 export function Sidebar({ view, onChange }: Props) {
   const loopsDue = (company.loops || []).filter((l) => l.due).length;
   const items: { id: View; label: string; Icon: typeof MapIcon; badge?: number }[] = [
+    { id: "board", label: "Board", Icon: BoardIcon },
     { id: "next", label: "Next", Icon: NextIcon },
     { id: "map", label: "Build map", Icon: MapIcon },
     { id: "dashboard", label: "Health", Icon: InboxIcon, badge: company.needsAttention },

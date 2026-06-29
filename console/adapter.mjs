@@ -236,6 +236,51 @@ export function toFoundry(brain, enrich = {}) {
     .sort((a, b) => String(b.ts || "").localeCompare(String(a.ts || "")));
 
   const health = computeHealth(tasks, stages, loops);
+
+  // The DEPARTMENT BOARD (v2 lens): one lane per department present in the build, lead lanes first.
+  // A lane never owns its own ranking -- its topMove is just the highest item of the SAME global,
+  // constraint-aware nextActions ranking that happens to belong to this department (the structural
+  // guard against the constraint-blind regression). The binding constraint + its lead set come from
+  // the engine (build-map.json); when none is diagnosed the board says so loudly (missing=true) and
+  // offers an honestly-labeled type default, never a silent guess presented as diagnosis.
+  const bc = buildMap.binding_constraint || null;
+  const constraintMissing = !!buildMap.constraint_missing;
+  const defaultLead = buildMap.default_lead || null;
+  const leadSet = new Set(bc?.lead_departments?.length ? bc.lead_departments : defaultLead ? [defaultLead] : []);
+  const constraint = {
+    archetype: bc?.archetype || null,
+    label: bc?.archetype ? (CONSTRAINT_LABEL[bc.archetype] || String(bc.archetype).replace(/_/g, " ")) : null,
+    leadDepartments: bc?.lead_departments || (defaultLead ? [defaultLead] : []),
+    surfaceIds: bc?.surface_ids || [],
+    win: bc?.win_definition || pulse.win || null,
+    missing: constraintMissing,
+    defaultLead,
+  };
+  const topMoveByDept = new Map();
+  for (const a of nextActionsView) if (!topMoveByDept.has(a.owner)) topMoveByDept.set(a.owner, a);
+  const laneMap = new Map();
+  for (const t of tasks) {
+    const l = laneMap.get(t.owner) || { department: t.owner, total: 0, done: 0, ready: 0, blocked: 0, working: 0 };
+    l.total++;
+    if (t.state === "completed") l.done++;
+    else if (t.state === "locked") l.blocked++;
+    else if (t.state === "agent") l.working++;
+    else l.ready++; // approval | input
+    laneMap.set(t.owner, l);
+  }
+  const board = [...laneMap.values()]
+    .map((l) => {
+      const isLead = leadSet.has(l.department);
+      const tm = topMoveByDept.get(l.department) || null;
+      return {
+        ...l,
+        isLead,
+        intensity: isLead ? "lead" : l.ready > 0 ? "active" : "idle",
+        pct: l.total ? Math.round((l.done / l.total) * 100) : 0,
+        topMove: tm ? { id: tm.id, title: tm.title, criticality: tm.criticality, criticalityLabel: tm.criticalityLabel, humanGate: tm.humanGate } : null,
+      };
+    })
+    .sort((a, b) => (b.isLead - a.isLead) || (b.ready - a.ready) || (b.total - a.total) || a.department.localeCompare(b.department));
   // Loops sorted for the view: due first, then soonest-next, eligible above locked.
   const loopsView = (loops || []).slice().sort((a, b) =>
     (b.due - a.due) || (b.eligible - a.eligible) ||
@@ -258,6 +303,8 @@ export function toFoundry(brain, enrich = {}) {
     currentLevel: buildMap.current_level ?? 0,
     nextActions: nextActionsView,
     focus,
+    constraint,
+    board,
     journey,
     wins,
     health,

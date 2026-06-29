@@ -197,6 +197,38 @@ test("toFoundry: wins are the graded completions, newest first (the closed-loop 
   assert.equal(company.wins.find((w) => w.id === "market-sizing-tam-sam-som").score, 82);
 });
 
+// ---- v2 department board + first-class constraint ----
+
+test("toFoundry: the binding constraint surfaces and the board marks + sorts lead lanes first", () => {
+  const buildMap = { ...HEALTH_MAP,
+    binding_constraint: { archetype: "no_users", surface_ids: ["entity-formation"], lead_departments: ["Strategy", "Growth"], win_definition: "100 activated users" },
+    constraint_missing: false };
+  const next = [
+    { id: "red-team-thesis", title: "Red team", department: "Strategy", effective_criticality: "existential", tier: 2, unblocks: [] },
+    { id: "entity-formation", title: "Entity formation", department: "Legal", effective_criticality: "existential", tier: 2, human_gate: true, unblocks: [] },
+  ];
+  const { company } = toFoundry({ buildMap, profile: PROFILE }, { ...ENRICH, next });
+  assert.equal(company.constraint.archetype, "no_users");
+  assert.equal(company.constraint.label, "No users yet (cold start)");
+  assert.deepEqual(company.constraint.leadDepartments, ["Strategy", "Growth"]);
+  assert.equal(company.constraint.win, "100 activated users");
+  assert.equal(company.constraint.missing, false);
+  const strategy = company.board.find((l) => l.department === "Strategy");
+  assert.equal(strategy.isLead, true);
+  assert.equal(strategy.intensity, "lead");
+  assert.equal(strategy.topMove.id, "red-team-thesis"); // top global-ranked move that belongs to the lane
+  assert.equal(company.board[0].isLead, true); // lead lanes sort to the front
+});
+
+test("toFoundry: a missing constraint sets the fail-loud flag and an honest default lead", () => {
+  const buildMap = { ...HEALTH_MAP, binding_constraint: null, constraint_missing: true, default_lead: "Product" };
+  const { company } = toFoundry({ buildMap, profile: PROFILE }, ENRICH);
+  assert.equal(company.constraint.missing, true);
+  assert.equal(company.constraint.archetype, null);
+  assert.equal(company.constraint.defaultLead, "Product");
+  assert.deepEqual(company.constraint.leadDepartments, ["Product"]); // shown, but as a labeled guess
+});
+
 test("toFoundry: focus reads the founder's win and constraint and humanizes the constraint", () => {
   const brain = { buildMap: { ...HEALTH_MAP, active_north_star: { label: "match rate", band: "retention", mature_growth_label: "GMV" } }, profile: PROFILE };
   const enrich = { ...ENRICH, pulse: { win: "Tokenise agent-run companies", constraint: "no_users" } };

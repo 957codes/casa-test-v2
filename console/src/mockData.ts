@@ -128,6 +128,27 @@ export interface Journey {
   momentumPct: number;
 }
 
+// The v2 department board: the binding constraint (with its lead set) and one lane per department.
+// A lane's topMove is the highest item of the SAME global constraint-aware ranking that belongs to
+// the lane; a lane never ranks its own work.
+export interface ConstraintView {
+  archetype: string | null;
+  label: string | null;
+  leadDepartments: string[];
+  surfaceIds: string[];
+  win: string | null;
+  missing: boolean;       // true when no constraint was diagnosed -> the board renders the fail-loud banner
+  defaultLead: string | null;
+}
+export interface BoardLaneMove { id: string; title: string; criticality: Criticality | null; criticalityLabel: string; humanGate: boolean }
+export interface BoardLane {
+  department: Department;
+  total: number; done: number; ready: number; blocked: number; working: number; pct: number;
+  isLead: boolean;
+  intensity: "lead" | "active" | "idle";
+  topMove: BoardLaneMove | null;
+}
+
 export interface Company {
   name: string;
   oneLiner: string;
@@ -141,6 +162,8 @@ export interface Company {
   currentLevel?: number;
   nextActions?: NextAction[];
   focus?: Focus;
+  constraint?: ConstraintView;
+  board?: BoardLane[];
   journey?: Journey;
   wins?: Win[];
   health?: CompanyHealth;
