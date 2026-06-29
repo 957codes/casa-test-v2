@@ -142,12 +142,15 @@ export interface ConstraintView {
   defaultLead: string | null;
 }
 export interface BoardLaneMove { id: string; title: string; criticality: Criticality | null; criticalityLabel: string; humanGate: boolean }
+export interface BoardLaneTask { id: string; title: string; state: TaskState; level: number; criticality: Criticality | null }
 export interface BoardLane {
   department: Department;
   total: number; done: number; ready: number; blocked: number; working: number; pct: number;
   isLead: boolean;
-  intensity: "lead" | "active" | "idle";
+  intensity: "lead" | "support" | "maintenance" | "idle";
+  northStar: string | null;     // display-only per-department north star (the driver tree branch)
   topMove: BoardLaneMove | null;
+  catalog: BoardLaneTask[];      // the lane's full play catalog, for the education expansion
 }
 
 export interface Company {

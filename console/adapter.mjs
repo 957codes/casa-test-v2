@@ -2,6 +2,8 @@
 // shape ({ company, stages, tasks }). Zero-dependency, so it is unit-tested from the
 // main suite (tests/adapter.test.mjs). The Console is read-only; this never mutates.
 
+import { deptNorthStar } from "../scripts/northstar.mjs";
+
 const levelKey = (l) => (l === "always-on" ? -1 : Number(l));
 
 // Every build-map node carries its authored department (router.buildMap copies pb.department,
@@ -271,6 +273,7 @@ export function toFoundry(brain, enrich = {}) {
   const topMoveByDept = new Map();
   for (const a of nextActionsView) if (!topMoveByDept.has(a.owner)) topMoveByDept.set(a.owner, a);
   const laneMap = new Map();
+  const laneTasks = new Map();
   for (const t of tasks) {
     const l = laneMap.get(t.owner) || { department: t.owner, total: 0, done: 0, ready: 0, blocked: 0, working: 0 };
     l.total++;
@@ -279,20 +282,36 @@ export function toFoundry(brain, enrich = {}) {
     else if (t.state === "agent") l.working++;
     else l.ready++; // approval | input
     laneMap.set(t.owner, l);
+    (laneTasks.get(t.owner) || laneTasks.set(t.owner, []).get(t.owner)).push(t);
   }
+  const profileLevel = buildMap.current_level ?? 0;
+  // 4-level INTENSITY allocator (display only, deterministic): LEAD = the constraint owner; SUPPORT =
+  // not lead but has ready work this cycle; MAINTENANCE = no ready work but in-flight or fully done
+  // (background upkeep, e.g. recurring loops); IDLE = nothing ready and not complete (blocked / waiting).
+  const INTENSITY_RANK = { lead: 3, support: 2, maintenance: 1, idle: 0 };
   const board = [...laneMap.values()]
     .map((l) => {
       const isLead = leadSet.has(l.department);
       const tm = topMoveByDept.get(l.department) || null;
+      const intensity = isLead ? "lead"
+        : l.ready > 0 ? "support"
+        : (l.working > 0 || (l.total > 0 && l.done === l.total)) ? "maintenance"
+        : "idle";
+      // The lane's full catalog (for the education expansion): every play in this function, by status.
+      const catalog = (laneTasks.get(l.department) || [])
+        .map((t) => ({ id: t.id, title: t.title, state: t.state, level: t.stageId === "always-on" ? -1 : Number(t.stageId) || 0, criticality: t.criticality || null }))
+        .sort((a, b) => a.level - b.level || a.title.localeCompare(b.title));
       return {
         ...l,
         isLead,
-        intensity: isLead ? "lead" : l.ready > 0 ? "active" : "idle",
+        intensity,
         pct: l.total ? Math.round((l.done / l.total) * 100) : 0,
+        northStar: deptNorthStar(profile, l.department, profileLevel),
         topMove: tm ? { id: tm.id, title: tm.title, criticality: tm.criticality, criticalityLabel: tm.criticalityLabel, humanGate: tm.humanGate } : null,
+        catalog,
       };
     })
-    .sort((a, b) => (b.isLead - a.isLead) || (b.ready - a.ready) || (b.total - a.total) || a.department.localeCompare(b.department));
+    .sort((a, b) => (INTENSITY_RANK[b.intensity] - INTENSITY_RANK[a.intensity]) || (b.ready - a.ready) || (b.total - a.total) || a.department.localeCompare(b.department));
   // Loops sorted for the view: due first, then soonest-next, eligible above locked.
   const loopsView = (loops || []).slice().sort((a, b) =>
     (b.due - a.due) || (b.eligible - a.eligible) ||

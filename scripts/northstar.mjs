@@ -157,4 +157,28 @@ export function northStar(profile, level) {
   };
 }
 
+// The per-DEPARTMENT north star: a DISPLAY-ONLY projection of the one company north star onto each
+// function (the driver tree). It is type-aware where it matters (Product activation, Growth, Success
+// retention, Finance guardrails all read the derived mature metric) and fixed where it does not. It
+// is NOT fed to any score (the eval proved a per-department metric is itself a static template; only
+// the binding constraint sorts), so this is legibility and the board's branch labels, nothing more.
+const DEPT_NORTH_STAR = {
+  Strategy: () => "binding-constraint burndown",
+  Product: (m, ns) => `${ns.band === "scale" ? ns.label : "activation"} to first value`,
+  Engineering: () => "ship cadence at green reliability",
+  Data: () => "decision instrumentation coverage",
+  Growth: (m) => `${metricLabel(m.growth)} via activated acquisition`,
+  Sales: () => "pipeline to closed-won",
+  Success: (m) => metricLabel(m.retention),
+  Finance: (m) => `runway months and ${metricLabel(m.guardrails[0] || "gross_margin")}`,
+  Legal: () => "regulatory surface cleared",
+  Operations: () => "cost-to-serve and loop hygiene",
+  Brand: () => "message resonance",
+};
+export function deptNorthStar(profile, department, level = 0) {
+  const fn = DEPT_NORTH_STAR[department];
+  if (!fn) return null;
+  return fn(matureNorthStar(profile), northStar(profile, level));
+}
+
 export { METRIC_IDS, metricLabel };

@@ -220,6 +220,20 @@ test("toFoundry: the binding constraint surfaces and the board marks + sorts lea
   assert.equal(company.board[0].isLead, true); // lead lanes sort to the front
 });
 
+test("toFoundry: board lanes carry a north star, 4-level intensity, and an expandable catalog", () => {
+  const buildMap = { ...HEALTH_MAP,
+    binding_constraint: { archetype: "no_users", surface_ids: [], lead_departments: ["Strategy"], win_definition: "x" },
+    constraint_missing: false };
+  const { company } = toFoundry({ buildMap, profile: PROFILE }, ENRICH);
+  const strategy = company.board.find((l) => l.department === "Strategy");
+  assert.equal(strategy.intensity, "lead");
+  assert.ok(strategy.northStar && strategy.northStar.length > 0, "lead lane has a north star branch");
+  assert.ok(strategy.catalog.length === 3 && strategy.catalog.every((t) => t.id && t.title), "lane carries its full catalog");
+  // Legal has one ready (entity-formation) and is not lead -> SUPPORT; a fully-done non-lead lane -> MAINTENANCE.
+  assert.equal(company.board.find((l) => l.department === "Legal").intensity, "support");
+  assert.ok(["lead", "support", "maintenance", "idle"].includes(strategy.intensity));
+});
+
 test("toFoundry: a missing constraint sets the fail-loud flag and an honest default lead", () => {
   const buildMap = { ...HEALTH_MAP, binding_constraint: null, constraint_missing: true, default_lead: "Product" };
   const { company } = toFoundry({ buildMap, profile: PROFILE }, ENRICH);
