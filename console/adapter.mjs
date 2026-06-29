@@ -247,12 +247,24 @@ export function toFoundry(brain, enrich = {}) {
   const constraintMissing = !!buildMap.constraint_missing;
   const defaultLead = buildMap.default_lead || null;
   const leadSet = new Set(bc?.lead_departments?.length ? bc.lead_departments : defaultLead ? [defaultLead] : []);
+  // win_definition may be structured {metric_id, current_value, target_value, deadline} (Phase 2) or a
+  // free-text string; render either to a single display line.
+  const winLabel = (w) => {
+    if (!w) return null;
+    if (typeof w === "string") return w;
+    if (typeof w === "object" && (w.metric_id || w.target_value != null)) {
+      const head = `${w.metric_id || "target"}: ${w.current_value ?? "?"} of ${w.target_value ?? "?"}`;
+      return w.deadline ? `${head} by ${w.deadline}` : head;
+    }
+    return null;
+  };
   const constraint = {
     archetype: bc?.archetype || null,
     label: bc?.archetype ? (CONSTRAINT_LABEL[bc.archetype] || String(bc.archetype).replace(/_/g, " ")) : null,
     leadDepartments: bc?.lead_departments || (defaultLead ? [defaultLead] : []),
     surfaceIds: bc?.surface_ids || [],
-    win: bc?.win_definition || pulse.win || null,
+    win: winLabel(bc?.win_definition) || pulse.win || null,
+    winGap: typeof bc?.win_gap === "number" ? bc.win_gap : null,
     missing: constraintMissing,
     defaultLead,
   };

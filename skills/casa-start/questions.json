@@ -214,9 +214,10 @@
         },
         {
           "id": "win_definition",
-          "prompt": "What would make the next stretch a clear win?",
+          "prompt": "What would make the next stretch a clear win? If you can, give the metric, where it is now, and the target (for example: weekly active users, 50 now, 1000 target).",
           "kind": "text",
-          "sets": { "field": "win_definition" }
+          "sets": { "field": "win_definition" },
+          "guidance": "When the founder names a metric WITH a current and target number, set win_definition to a STRUCTURED object { metric_id, current_value (number), target_value (number), deadline (optional, from the horizon answer) }. The engine turns this into a win_gap that sharpens how hard the binding constraint's plays are pushed (a company far from target gets its constraint work pushed harder than one nearly there). If they only give a qualitative answer, set win_definition to that string. Do not invent numbers the founder did not give."
         },
         {
           "id": "horizon",

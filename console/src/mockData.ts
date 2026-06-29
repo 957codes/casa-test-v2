@@ -137,6 +137,7 @@ export interface ConstraintView {
   leadDepartments: string[];
   surfaceIds: string[];
   win: string | null;
+  winGap: number | null;  // [0,1] distance-to-target on the constraint metric (Phase 2); null if not structured
   missing: boolean;       // true when no constraint was diagnosed -> the board renders the fail-loud banner
   defaultLead: string | null;
 }

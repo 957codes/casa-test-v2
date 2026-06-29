@@ -205,18 +205,29 @@ function priorityWeight(pb, w) {
   return w.default ?? 1;
 }
 
-// The binding constraint steers ranking DIRECTLY, not only laundered through pulse.json. Its
-// surface plays are merged into the effective promote set so they get the existential tier bump
-// (headlineTier) and promote weight INSIDE the engine -- the steering survives a deleted or
-// regenerated pulse.json. When there is no constraint (or it has no surface plays), this returns
-// the caller's weights UNCHANGED, so nextActions output is byte-identical to the pre-constraint
-// engine and every existing golden holds. The constraint-present path is allowed to differ; that
-// is the point (it is what fixes the eval's constraint-blind generic ranking).
+// The binding constraint steers ranking DIRECTLY, not only laundered through pulse.json:
+//   (1) its SURFACE plays are merged into the effective promote set so they get the existential
+//       tier bump (headlineTier) + promote weight INSIDE the engine, and
+//   (2) its LEAD departments get a gentle byDepartment tilt (Phase 2) so the constraint owner's
+//       ready work leads the generic work in other lanes.
+// Both survive a deleted/regenerated pulse.json. A pulse/founder value for a lead department always
+// wins (we never overwrite an explicit weight). The lead tilt is clamped well below the existential
+// floor (1.3 vs growth 0.95 -> 1.235, still under existential 1.8 at tier 2), so a lead-lane growth
+// play can never leapfrog a do-or-die play in another lane -- the tier sort dominates. When there is
+// no constraint (no surface plays AND no leads), this returns the caller's weights UNCHANGED, so
+// nextActions output is byte-identical to the pre-constraint engine and every existing golden holds.
+const LEAD_DEPT_TILT = 1.3;
 function constraintWeights(weights, bindingConstraint) {
   const surface = bindingConstraint && Array.isArray(bindingConstraint.surface_ids) ? bindingConstraint.surface_ids : [];
-  if (!surface.length) return weights;
+  const leads = bindingConstraint && Array.isArray(bindingConstraint.lead_departments) ? bindingConstraint.lead_departments : [];
+  if (!surface.length && !leads.length) return weights;
   const base = weights || {};
-  return { ...base, promote_ids: [...new Set([...(base.promote_ids || []), ...surface])] };
+  const byDepartment = { ...(base.byDepartment || {}) };
+  for (const d of leads) if (!Object.prototype.hasOwnProperty.call(byDepartment, d)) byDepartment[d] = LEAD_DEPT_TILT;
+  const out = { ...base };
+  if (surface.length) out.promote_ids = [...new Set([...(base.promote_ids || []), ...surface])];
+  if (Object.keys(byDepartment).length) out.byDepartment = byDepartment;
+  return out;
 }
 
 // Stage ladder, duplicated from stage.mjs to avoid a router<-stage import cycle (a test
@@ -315,7 +326,10 @@ function headlineTier(pb, stage, weights) {
 
 // The unified fitness score. fit = { currentLevel, stage, models } is OPTIONAL: when absent
 // the result is byte-identical to the pre-fit score (every existing score unit test passes).
-function score(pb, slack, flags, weights, fit) {
+// constraintUrgency (Phase 2) is the win-gap multiplier applied to the binding constraint's surface
+// plays: how far the company is from its target on the constraint metric. It defaults to 1, so a
+// caller that passes no urgency (or a fully-closed gap) is byte-identical to before.
+function score(pb, slack, flags, weights, fit, constraintUrgency = 1) {
   const lev = LEVERAGE_W[pb.leverage] || 2;
   const eff = EFFORT_W[pb.effort] || 1.3;
   const rev = pb.blocks_revenue && !flags.has("has_revenue") ? 1.5 : 1;
@@ -330,7 +344,7 @@ function score(pb, slack, flags, weights, fit) {
   // headline a launched company over its activation/retention work. Demote it out of the top cluster.
   const maint = fit && pb.recurring && levelKey(pb.level) < fit.currentLevel && effectiveCriticality(pb, fit.stage) !== "existential" ? 0.6 : 1;
   const pw = priorityWeight(pb, weights);
-  return Math.round((lev * urgency * sf * ff * maint * rev / eff * pw) * 1000) / 1000;
+  return Math.round((lev * urgency * sf * ff * maint * rev / eff * pw * constraintUrgency) * 1000) / 1000;
 }
 
 function buildMap(playbooks, profile, { completed = [], level = 0 } = {}) {
@@ -379,10 +393,17 @@ function nextActions(playbooks, profile, { completed = [], level = 0, weights = 
   // Fold the binding constraint into the effective weights. No constraint => effWeights === weights
   // => byte-identical ranking (goldens preserved).
   const effWeights = constraintWeights(weights, binding_constraint);
+  // Phase 2: the win-gap urgency scales the constraint's SURFACE plays by how far the company is from
+  // its target (win_gap in [0,1]). gap 0 (or no win_definition) => multiplier 1 => byte-identical. Two
+  // same-archetype companies with different gaps therefore score their surface plays differently.
+  const surfaceSet = new Set(binding_constraint?.surface_ids || []);
+  const winGap = typeof binding_constraint?.win_gap === "number" ? Math.min(Math.max(binding_constraint.win_gap, 0), 1) : 0;
+  const GAP_K = 0.5;
+  const urgencyOf = (id) => (winGap > 0 && surfaceSet.has(id) ? 1 + winGap * GAP_K : 1);
   const scored = members
     .filter((pb) => ready(pb, ctx))
     .map((pb) => ({ id: pb.id, title: pb.title, level: pb.level, department: pb.department || null,
-      score: score(pb, slack.get(pb.id), flags, effWeights, fit),
+      score: score(pb, slack.get(pb.id), flags, effWeights, fit, urgencyOf(pb.id)),
       tier: headlineTier(pb, fit.stage, effWeights),
       effective_criticality: effectiveCriticality(pb, fit.stage),
       human_gate: pb.human_gate, blocks_revenue: pb.blocks_revenue, leverage: pb.leverage, effort: pb.effort }))

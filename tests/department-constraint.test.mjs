@@ -6,7 +6,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { select, buildMap, nextActions } from "../scripts/router.mjs";
-import { deriveBindingConstraint, leadDepartments, deriveStage } from "../scripts/stage.mjs";
+import { deriveBindingConstraint, leadDepartments, deriveStage, winGap } from "../scripts/stage.mjs";
 import { INDEX, loadJson } from "./helpers.mjs";
 
 const PROBE = loadJson("examples/profile-b2b-devtool.json"); // b2b, high_acv
@@ -101,6 +101,51 @@ test("leadDepartments: every archetype yields at most 4 leads, ordered by tilt s
     for (const d of leads) assert.ok(ELEVEN.has(d), `${arch} lead ${d} not a real department`);
   }
   assert.deepEqual(leadDepartments("nonexistent"), []);
+});
+
+// ---- Phase 2: structured win-gap urgency + lead-department tilt (both gated behind constraint) ----
+
+test("winGap: structured win yields a [0,1] distance-to-target; free text or missing yields 0", () => {
+  assert.equal(winGap({ current_value: 0, target_value: 1000 }), 1);
+  assert.equal(winGap({ current_value: 800, target_value: 1000 }), 0.2);
+  assert.equal(winGap({ current_value: 1000, target_value: 1000 }), 0);
+  assert.equal(winGap("reach 1000 users"), 0);
+  assert.equal(winGap({}), 0);
+  assert.equal(winGap(null), 0);
+});
+
+test("deriveBindingConstraint: a structured win_definition produces a win_gap the router can use", () => {
+  const bc = deriveBindingConstraint(
+    { constraint_archetype: "no_users", win_definition: { metric_id: "wau", current_value: 100, target_value: 1000, deadline: "Q3" } },
+    INDEX,
+  );
+  assert.equal(bc.win_gap, 0.9);
+});
+
+test("nextActions: a wider win gap raises the constraint surface play's score (instance-specificity)", () => {
+  const level = 1;
+  const base = nextActions(INDEX, MEME, { level });
+  const target = base.find((a) => a.tier < 2) || base[0];
+  const low = nextActions(INDEX, MEME, { level, binding_constraint: { archetype: "no_users", surface_ids: [target.id], lead_departments: [], win_gap: 0 } });
+  const high = nextActions(INDEX, MEME, { level, binding_constraint: { archetype: "no_users", surface_ids: [target.id], lead_departments: [], win_gap: 1 } });
+  const sLow = low.find((a) => a.id === target.id).score;
+  const sHigh = high.find((a) => a.id === target.id).score;
+  assert.ok(sHigh > sLow, `gap 1 should outscore gap 0 (${sHigh} > ${sLow})`);
+  assert.notDeepEqual(high, low); // same archetype + surface, different gap => different ranked output
+});
+
+test("nextActions: lead departments get a gentle tilt that never leapfrogs a do-or-die in another lane", () => {
+  const level = 1;
+  const base = nextActions(INDEX, MEME, { level });
+  const baseP = base.find((a) => a.tier < 2);
+  assert.ok(baseP, "need a sub-existential ready play to tilt");
+  const leadDept = baseP.department;
+  const withLead = nextActions(INDEX, MEME, { level, binding_constraint: { archetype: "no_users", surface_ids: [], lead_departments: [leadDept], win_gap: 0 } });
+  const leadP = withLead.find((a) => a.id === baseP.id);
+  assert.ok(leadP.score > baseP.score, "a lead-department play is tilted up");
+  assert.equal(leadP.tier, baseP.tier, "the tilt does not change the tier (cannot cross the existential floor)");
+  const ex = withLead.find((a) => a.tier === 2 && a.department !== leadDept);
+  if (ex) assert.ok(withLead.indexOf(ex) < withLead.indexOf(leadP), "a non-lead do-or-die still leads a tilted lead play");
 });
 
 test("deriveStage: returns a member-scoped binding_constraint end to end", () => {

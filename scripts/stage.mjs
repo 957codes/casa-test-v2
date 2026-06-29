@@ -242,12 +242,24 @@ export function leadDepartments(archetype) {
   return Object.entries(d).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([dept]) => dept);
 }
 
+// The win gap (Phase 2): how far the company is from its target on the constraint metric, in [0,1].
+// A STRUCTURED win_definition {metric_id, current_value, target_value, deadline} yields a real gap
+// (1 = nothing done yet, 0 = already at target); a free-text or missing win yields 0 (no urgency,
+// so the ranking stays byte-identical to a constraint with no gap). This is what makes two companies
+// with the same archetype but different distance-to-target rank their surface work differently.
+export function winGap(win) {
+  if (!win || typeof win !== "object") return 0;
+  const c = Number(win.current_value), t = Number(win.target_value);
+  if (!Number.isFinite(c) || !Number.isFinite(t) || t <= 0) return 0;
+  return Math.min(Math.max((t - c) / t, 0), 1);
+}
+
 // The BINDING CONSTRAINT as first-class state (v2). Read DIRECTLY by router.nextActions so the
 // constraint keeps steering even if pulse.json is deleted or regenerated. surface_ids are the
 // constraint's key plays that are MEMBERS of this company's build (so the list is real work, not a
-// generic label). win_definition is carried through verbatim for now; Phase 2 makes it structured
-// {metric_id, current_value, target_value, deadline} and feeds the gap into the sort. Returns null
-// when the founder named no constraint -- the caller must then fail loud, never serve generic ranking.
+// generic label). win_definition is carried through as given (a structured object or a string);
+// win_gap is the derived [0,1] distance-to-target the router uses as a surface-play urgency. Returns
+// null when the founder named no constraint -- the caller must then fail loud, never serve generic.
 export function deriveBindingConstraint(answers, playbooks, memberIds) {
   const archetype = answers.constraint_archetype || null;
   if (!archetype) return null;
@@ -258,6 +270,7 @@ export function deriveBindingConstraint(answers, playbooks, memberIds) {
     surface_ids,
     lead_departments: leadDepartments(archetype),
     win_definition: answers.win_definition || "",
+    win_gap: winGap(answers.win_definition),
   };
 }
 
