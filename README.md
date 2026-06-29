@@ -89,6 +89,8 @@ level for your business type.
 |---|---|
 | `/casa-start` | Run the stage interview, then select, sequence, and seed your build map |
 | `/casa-priority` | Re-evaluate where the company is and get your ranked priorities for this session |
+| `/casa-board` | See your company as department lanes led by the binding constraint, then run a wave of parallel drafts |
+| `/casa-department <name>` | Focus a work session on one function (Engineering, Growth, Finance, ...) |
 | `/casa-next` | The always-on advisor: your single next best action |
 | `/casa-map` | Show and approve your personalized build map |
 | `/casa-loops` | Show and run recurring loops (pulse, retro, content, close) |

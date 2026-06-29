@@ -394,7 +394,18 @@ short, date entries, never delete the protocol).
   as "What a strong version contains" (a standard, not a result), drops the fake section check-marks, and
   offers "Do this in Casa" to produce a real graded version. The adapter stays a pure transform (bridge
   supplies the engine ranking + outputs + pulse via enrich). Adapter 12 tests, suite 104, preflight 50.
-- Next: wire casa-serve into a real founder session (drain a live queue end to end); revisit the engine's
-  stage-seeding model (whether to record a seeded set in state rather than infer assumed from missing output);
-  per-stage catalog depth for the few sub-90 companies; Pay v0 BYO-key mode; publish prep.
+- v2 DEPARTMENT MODEL (2026-06-28): the founder-facing surface is now the DEPARTMENT (the 11 authored
+  on every play), not the level. A department is a LENS over the one constraint-first global ranking, never
+  its own ranker (the structural fix for the 40-company byte-identical regression). Landed: (1) binding_constraint
+  is first-class state.json read DIRECTLY by router.nextActions (constraintWeights promotes surface plays a tier
+  and tilts the lead departments; byte-identical when absent so all goldens hold); (2) structured win_definition
+  {metric_id,current_value,target_value,deadline} -> win_gap scales the surface plays (instance-specificity);
+  (3) scripts/wave.mjs computes DAG-independent ready sets concentrated on the lead lanes for the subagent fan-out;
+  (4) the Console default view is the DEPARTMENT BOARD (driver tree, 4-level LEAD/SUPPORT/MAINTENANCE/IDLE
+  intensity, education-as-hero lane expansion, fail-loud banner). Catalog 150 -> 169 (early money-validation +
+  thin-lane depth; goldens b2b 124/169, b2c 115/169). Command surface adds /casa-board and /casa-department.
+  Validation: constraint drives the #1 move 14/15 across diverse companies, 14/15 distinct top-5 (was generic).
+  Suite 125 tests, preflight 53, all green.
+- Next: drive /casa-board end to end in a live founder session; deptNorthStar instrumentation (live metric values);
+  Growth sub-taxonomy on the board; a full persona retention re-eval once the do-work-see-progress loop is exercised.
 <!-- /CASA:AUTO:repo-status -->
